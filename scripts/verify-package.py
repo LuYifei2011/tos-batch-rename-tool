@@ -8,6 +8,7 @@ import struct
 import sys
 import tarfile
 import hashlib
+import gzip
 
 ROOT = Path(__file__).resolve().parent.parent
 source_config = json.loads((ROOT / "packaging/config.ini").read_text())
@@ -28,6 +29,9 @@ for arg in sys.argv[1:]:
         members[name]=data[pos+60:pos+60+length]
         pos+=60+length+(length%2)
     assert members["debian-binary"]==b"2.0\n"
+    for name in ("control.tar.gz", "data.tar.gz"):
+        # The official TOS checker rejects POSIX USTAR/PAX package archives.
+        assert gzip.decompress(members[name])[257:265] == b"ustar  \x00", f"{name} must use GNU tar format"
     with tarfile.open(fileobj=io.BytesIO(members["control.tar.gz"])) as control:
         fields=control.extractfile("./control").read().decode()
         arch=re.search(r"^Architecture: (\S+)$",fields,re.M)[1]

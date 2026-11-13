@@ -80,7 +80,7 @@ for p in control.iterdir():
 (control / "conffiles").write_text("")
 def archive(directory, excludes=()):
     data = io.BytesIO()
-    with tarfile.open(fileobj=data, mode="w:gz", format=tarfile.USTAR_FORMAT) as tar:
+    with tarfile.open(fileobj=data, mode="w:gz", format=tarfile.GNU_FORMAT) as tar:
         for p in sorted(directory.rglob("*")):
             rel = p.relative_to(directory)
             if rel.parts[0] in excludes:
