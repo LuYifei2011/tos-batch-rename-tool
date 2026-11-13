@@ -1,0 +1,58 @@
+#!/bin/sh
+set -eu
+app=/usr/local/batch-rename
+case "${1:-}" in
+configure)
+    for name in data site site.next site.previous; do
+        if [ -L "$app/$name" ] || { [ -e "$app/$name" ] && [ ! -d "$app/$name" ]; }; then
+            echo "batch-rename: $app/$name must be a real directory" >&2
+            exit 1
+        fi
+    done
+    # Retire only byte-identical units written by the earlier installer.
+    for name in batch-rename.service batch-rename.socket batch-rename-setup.service; do
+        if [ "$(systemctl show --property=LoadState --value "$name")" = not-found ]; then continue; fi
+        systemctl stop "$name"
+        fragment=$(systemctl show --property=FragmentPath --value "$name")
+        if [ -f "$fragment" ] && [ ! -L "$fragment" ]; then
+            if [ -f "$app/init.d/$name" ] && [ "$fragment" -ef "$app/init.d/$name" ]; then continue; fi
+            case "$name" in
+                batch-rename.service) expected=ac5b5d1edf2415a077e805802c616d3b27ce10c52be99376ca5c1e370320d14e ;;
+                batch-rename.socket) expected=022021d9145442b216d738c61d12b95a519c680716ef7e5bc2d8a03766f1e3cf ;;
+                batch-rename-setup.service) expected=6a624bbacc371460d1ee6cc36cba11184232e09592874571b5f68768df68a883 ;;
+            esac
+            actual=$(sha256sum "$fragment")
+            if [ "${actual%% *}" != "$expected" ]; then
+                echo "batch-rename: custom unit at $fragment requires manual migration" >&2
+                exit 1
+            fi
+            systemctl disable "$name"
+            rm -f -- "$fragment"
+        fi
+    done
+    if [ -d "$app/site.previous" ] && [ ! -d "$app/site" ]; then mv "$app/site.previous" "$app/site"; fi
+    rm -rf -- "$app/site.next" "$app/site.previous"
+    install -d -m 0755 "$app/site.next"
+    trap 'rm -rf -- "$app/site.next"' 0
+    tar -xjf "$app/webui.bz2" -C "$app/site.next"
+    if [ ! -f "$app/site.next/index.html" ]; then
+        echo "batch-rename: frontend archive has no index.html" >&2
+        exit 1
+    fi
+    if [ -d "$app/site" ]; then mv "$app/site" "$app/site.previous"; fi
+    if ! mv "$app/site.next" "$app/site"; then
+        if [ -d "$app/site.previous" ]; then mv "$app/site.previous" "$app/site"; fi
+        exit 1
+    fi
+    rm -rf -- "$app/site.previous"
+    trap - 0
+    systemctl daemon-reload
+    systemctl enable "$app/init.d/batch-rename.service" "$app/init.d/batch-rename.socket"
+    if id batch-rename >/dev/null 2>&1; then
+        systemctl reset-failed batch-rename.service batch-rename.socket
+        systemctl start batch-rename.service
+    else
+        echo "batch-rename: waiting for TOS to create its application account; enable the app after account creation" >&2
+    fi
+    ;;
+esac

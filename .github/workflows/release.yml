@@ -1,0 +1,135 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: '.go-version'
+          cache-dependency-path: go.sum
+      - run: npm ci
+      - run: python3 scripts/check-metadata.py
+      - name: Validate release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/check-metadata.py --tag "$RELEASE_TAG"
+      - run: npm test
+      - run: npm run build
+      - run: go test -race -count=1 ./server
+      - run: go vet ./server
+      - run: python3 scripts/test-install.py
+      - run: python3 scripts/test-release.py
+
+  package:
+    name: Build both architectures
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: '.go-version'
+          cache-dependency-path: go.sum
+      - run: npm ci
+      - run: python3 scripts/build-package.py amd64
+      - run: python3 scripts/build-package.py arm64
+      - name: Verify packages
+        run: python3 scripts/verify-package.py build/*.deb
+      - name: Scan dependencies, Linux sources and packaged binaries
+        run: python3 scripts/check-security.py build/*.deb
+      - name: Run official TOS package checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool="$RUNNER_TEMP/TOSAppSelfTestingTool_amd64"
+          curl --fail --location --retry 3 --output "$tool" \
+            https://github.com/terramaster-tos/tos-app-pkg-tools/releases/download/v1.0.3-beta/TOSAppSelfTestingTool_amd64
+          printf '%s  %s\n' 7d4fdc3ad5515322d1b947f344c293d66df6063a6047b1dbd57d5bdecad11234 "$tool" | sha256sum --check
+          chmod +x "$tool"
+          for package in build/*.deb; do
+            "$tool" -c "$package"
+          done
+      - name: Exercise the installed service with real systemd
+        run: sudo --preserve-env=GITHUB_ACTIONS python3 scripts/test-service.py build/batch-rename_0.1.0_amd64.deb
+      - name: Calculate checksums
+        working-directory: build
+        run: sha256sum -- *.deb > SHA256SUMS
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-packages
+          path: |
+            build/*.deb
+            build/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Publish GitHub release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-packages
+          path: artifacts
+      - name: Verify downloaded assets
+        working-directory: artifacts
+        run: sha256sum --check SHA256SUMS
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check-metadata.py --tag "$RELEASE_TAG"
+          flags=()
+          if [ "$(python3 -c 'import json; print(json.load(open("packaging/config.ini"))["beta"])')" = True ]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" artifacts/*.deb artifacts/SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --title "$RELEASE_TAG" \
+            --notes-file docs/RELEASE_NOTES.md "${flags[@]}"

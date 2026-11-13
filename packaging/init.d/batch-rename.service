@@ -1,0 +1,34 @@
+[Unit]
+Description=Batch Rename service
+Requires=batch-rename.socket
+After=batch-rename.socket
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=batch-rename
+Group=batch-rename
+WorkingDirectory=/usr/local/batch-rename
+ExecStartPre=+/usr/local/batch-rename/bin/batch-rename -prepare-data
+ExecStart=/usr/local/batch-rename/bin/batch-rename -mode tos -data /usr/local/batch-rename/data -web /usr/local/batch-rename/site -workers 4
+TimeoutStartSec=30
+TimeoutStopSec=35
+UMask=0077
+Environment=GOMEMLIMIT=192MiB
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=-/usr/local/batch-rename/data
+ProtectHome=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+MemoryMax=256M
+CPUQuota=50%
+LimitNOFILE=4096
+TasksMax=128
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

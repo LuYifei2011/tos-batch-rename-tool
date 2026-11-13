@@ -1,0 +1,21 @@
+[Unit]
+Description=Prepare Batch Rename application data
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/id batch-rename
+ExecStartPre=/usr/bin/test ! -L /usr/local/batch-rename/data
+ExecStart=/usr/bin/install -d -m 0700 -o batch-rename -g batch-rename /usr/local/batch-rename/data
+ExecStartPost=/bin/systemctl --no-block start batch-rename.socket batch-rename.service
+RemainAfterExit=true
+Restart=on-failure
+RestartSec=2
+UMask=0077
+ProtectHome=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/usr/local/batch-rename/data
+NoNewPrivileges=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=CAP_CHOWN CAP_FOWNER CAP_DAC_OVERRIDE

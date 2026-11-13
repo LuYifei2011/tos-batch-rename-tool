@@ -1,0 +1,16 @@
+[Unit]
+Description=Batch Rename platform API socket
+Requires=batch-rename-setup.service
+After=batch-rename-setup.service
+PartOf=batch-rename.service
+
+[Socket]
+ListenStream=/var/api/batch-rename.sock
+SocketUser=batch-rename
+SocketGroup=batch-rename
+SocketMode=0660
+DirectoryMode=0755
+RemoveOnStop=true
+
+[Install]
+WantedBy=sockets.target

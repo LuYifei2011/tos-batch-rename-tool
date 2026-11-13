@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+case "${1:-}" in
+remove|deconfigure)
+    for name in batch-rename.service batch-rename.socket; do
+        if [ "$(systemctl show --property=LoadState --value "$name")" != not-found ]; then
+            systemctl stop "$name"
+            systemctl disable "$name"
+        fi
+    done
+    ;;
+upgrade)
+    for name in batch-rename.service batch-rename.socket; do
+        if [ "$(systemctl show --property=LoadState --value "$name")" != not-found ]; then systemctl stop "$name"; fi
+    done
+    ;;
+esac
