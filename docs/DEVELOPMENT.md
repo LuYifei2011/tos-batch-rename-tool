@@ -36,7 +36,7 @@ python3 scripts/check-security.py build/batch-rename_0.1.0_amd64.deb build/batch
 
 `.github/workflows/release.yml` 在 `main` 推送、拉取请求和手动运行时执行验证，并上传双架构构建产物；推送 `v*` 标签时，在所有检查成功后创建 GitHub Release。
 
-- 测试在 Linux 和 macOS 运行，包含后端竞态检测。
+- CI 测试在 Ubuntu 24.04 运行，包含后端竞态检测。
 - Ubuntu 构建任务安装 amd64 deb，以真实 systemd 验证账号延后创建、启动前权限初始化、非 root 业务进程、故障恢复、升级及卸载；此检查不能代替 TOS 真机验收。
 - Linux 构建两个架构，执行依赖与二进制漏洞扫描、项目校验和官方包自测，生成 `SHA256SUMS`。
 - 只有标签发布任务具有 `contents: write` 权限，使用仓库内置 `GITHUB_TOKEN`。
