@@ -1,4 +1,4 @@
-github.com/LuYifei2011/tos-app-kit/go v0.1.0 h1:NMlWOw5ZCl2zEjNP05BQfTUWx3mP9e8yp3aE6UV1lLQ=
-github.com/LuYifei2011/tos-app-kit/go v0.1.0/go.mod h1:TMOxmqygEYnOAm1NJ7BZeBZXTqAV5RlinSKvDDHp1wQ=
+github.com/LuYifei2011/tos-app-kit/go v0.2.0 h1:NJBgWoD3lDPgqATuK94t/xqfH5+mCogiL0iCG7ZoCFg=
+github.com/LuYifei2011/tos-app-kit/go v0.2.0/go.mod h1:TMOxmqygEYnOAm1NJ7BZeBZXTqAV5RlinSKvDDHp1wQ=
 golang.org/x/sys v0.48.0 h1:bbX/i/6MgT9BVLM9RT1thmxL04yeTAhbEz4SyadbXoo=
 golang.org/x/sys v0.48.0/go.mod h1:hNLxWAXmnKAxqDtdwIYC4bM9oQPEecfsnNMuSxOs3og=

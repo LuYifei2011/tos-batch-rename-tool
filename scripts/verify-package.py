@@ -109,6 +109,7 @@ for arg in sys.argv[1:]:
             assert any("preview.worker-" in name for name in web.getnames())
         for name in ["licenses/vue.txt","licenses/go.txt","licenses/x-sys.txt"]:
             assert get(name)
+        assert get("licenses/lucide-vue.txt") == (ROOT / "node_modules/@lucide/vue/LICENSE").read_bytes()
         assert get("licenses/tos-app-core-go.txt") == core_license, "Shared Go module license differs from installed dependency"
         for name in ["tos-app-core", "tos-app-ui-kit"]:
             assert get("licenses/" + name + ".txt") == (ROOT / "node_modules" / name / "LICENSE").read_bytes(), "Browser library license differs from installed dependency"

@@ -8,6 +8,7 @@ Runtime components included in the application:
 |---|---|---|
 | Vue 3, @vue/shared, @vue/reactivity, @vue/runtime-core, @vue/runtime-dom | MIT | https://github.com/vuejs/core |
 | TOS App Kit: tos-app-core, tos-app-ui-kit, Go module | MIT | https://github.com/LuYifei2011/tos-app-kit |
+| Lucide Vue (@lucide/vue) | ISC | https://github.com/lucide-icons/lucide |
 | Go runtime and standard library | BSD-3-Clause | https://go.dev/LICENSE |
 | golang.org/x/sys | BSD-3-Clause | https://go.googlesource.com/sys |
 

@@ -4,7 +4,7 @@ import FileTable from './components/FileTable.vue'
 import Icon from './components/Icon.vue'
 import RulePanel from './components/RulePanel.vue'
 import RootList from './components/RootList.vue'
-import { TosConnectionReport as ConnectionReport, TosPreferencesForm as PreferencesForm } from 'tos-app-ui-kit'
+import { TosAppShell, TosConnectionReport as ConnectionReport, TosPreferencesForm as PreferencesForm } from 'tos-app-ui-kit'
 import { api, backendVersion, connectionDiagnostic, denied } from './core/api'
 import { APP_VERSION } from './core/build'
 import { localizeMessage, number, t } from './core/i18n'
@@ -277,13 +277,11 @@ onUnmounted(() => {
     <ConnectionReport v-if="connectionDiagnostic" :report="connectionDiagnostic" />
     <button class="button primary" @click="reopen">{{ t('重新加载') }}</button>
   </main>
-  <div v-else class="app-shell">
-    <header class="app-header">
-      <h1><Icon name="rename" :size="21" />{{ t('批量重命名') }}</h1>
-      <span v-if="mode === 'demo'" class="demo-label">{{ t('演示目录') }}</span>
-    </header>
-    <main v-if="initializing" class="startup-loading" role="status">{{ t('正在连接 TOS…') }}</main>
-    <main v-else class="workspace">
+  <TosAppShell v-else :title="t('批量重命名')" scroll="hidden" content-class="app-content">
+    <template #icon><Icon class="app-brand-icon" name="rename" :size="21" /></template>
+    <template v-if="mode === 'demo'" #header-extra><span class="demo-label">{{ t('演示目录') }}</span></template>
+    <div v-if="initializing" class="startup-loading" role="status">{{ t('正在连接 TOS…') }}</div>
+    <div v-else class="workspace">
       <section class="controls-pane" :aria-label="t('规则与操作')">
         <RulePanel v-model="rules" :disabled="busy" />
         <footer class="apply-area">
@@ -309,7 +307,7 @@ onUnmounted(() => {
           <button v-if="job && currentJob && ['partial', 'interrupted', 'cancelled'].includes(job.state) && !busy" class="text-button" @click="showResult">{{ t('查看结果') }}</button>
         </footer>
       </section>
-    </main>
+    </div>
     <dialog ref="dialog" class="app-dialog" aria-labelledby="dialog-title" @click="($event.target === dialog) && !checking && dialog?.close()" @cancel="checking && $event.preventDefault()">
       <template v-if="dialogKind === 'confirm'">
         <header class="dialog-heading"><h2 id="dialog-title">{{ t(undoing ? '撤销重命名' : '确认重命名') }}</h2><button class="icon-button" :aria-label="t('关闭确认')" :disabled="checking" @click="dialog?.close()"><Icon name="close" :size="18" /></button></header>
@@ -332,5 +330,5 @@ onUnmounted(() => {
         <div class="result-list"><div v-for="item in resultItems" :key="item.from"><strong>{{ item.from }}</strong><p>{{ localizeMessage(item.error || (item.state === 'pending' ? '未执行' : '请核对文件实际状态')) }}</p></div></div>
       </template>
     </dialog>
-  </div>
+  </TosAppShell>
 </template>

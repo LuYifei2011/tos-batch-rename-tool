@@ -16,7 +16,7 @@ async function main() {
   const engineName = process.env.TEST_BROWSER || 'chromium';
   const engine = { chromium, firefox, webkit }[engineName];
   assert.ok(engine, 'Unknown browser');
-  const browser = await engine.launch({ headless: true });
+  const browser = await engine.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE && engineName === 'chromium' ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE } : {}) });
   const context = await browser.newContext({ viewport: { width: 960, height: 700 }, locale: 'zh-CN' });
   const errors = [];
   context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
@@ -28,8 +28,14 @@ async function main() {
     const info = await (await page.request.get(new URL('/v2/proxy/batch-rename/api/info', appUrl).href)).json();
     assert.equal(info.mode, 'demo', 'Refuse to modify files outside demo mode');
     await page.goto(appUrl);
+    await expect(page.locator('.tos-app-shell__title')).toHaveText('批量重命名');
+    assert.equal(await page.locator('main').count(), 1);
+    assert.equal(await page.locator('.tos-app-shell__header').evaluate(el => el.getBoundingClientRect().height), 41);
+    assert.equal(await page.locator('.tos-app-shell__content').evaluate(el => getComputedStyle(el).overflowY), 'hidden');
+    await expect(page.locator('.tos-app-shell__icon img')).toHaveAttribute('aria-hidden', 'true');
     await page.getByRole('button', { name: '演示共享目录', exact: true }).click();
     await page.getByRole('button', { name: '照片整理', exact: true }).click();
+    await expect(page.locator('button[aria-label="刷新目录"] svg')).toHaveAttribute('aria-hidden', 'true');
     await page.getByLabel('查找', { exact: true }).fill('IMG_');
     await page.getByLabel('替换为', { exact: true }).fill('KIT_');
     await page.getByRole('button', { name: '重命名 18 项', exact: true }).waitFor();
@@ -71,6 +77,9 @@ async function main() {
     for (const width of [390, 320]) {
       await page.setViewportSize({ width, height: 844 });
       await noOverflow(page);
+      const title = await page.locator('.tos-app-shell__title').boundingBox();
+      assert.ok(title.x + title.width <= width - 180, 'TOS window controls must keep their space');
+      assert.equal(await page.locator('.tos-app-shell__content').evaluate(el => getComputedStyle(el).overflowY), 'visible');
       await page.getByRole('button', { name: '语言与主题', exact: true }).click();
       await noOverflow(page);
       assert.equal(await page.getByLabel('主题', { exact: true }).evaluate(el => el.getBoundingClientRect().height), 44);
@@ -93,8 +102,12 @@ async function main() {
 
     const kit = await context.newPage();
     await kit.goto(kitUrl);
+    await expect(kit.locator('.tos-app-shell__title')).toHaveText('TOS Kit 示例');
+    await expect(kit.locator('.tos-app-shell__extra')).toHaveText('zh-CN');
     await kit.getByLabel('语言', { exact: true }).selectOption('en-US');
     await kit.getByLabel('Theme', { exact: true }).selectOption('dark');
+    await expect(kit.locator('.tos-app-shell__title')).toHaveText('TOS Kit example');
+    await expect(kit.locator('.tos-app-shell__extra')).toHaveText('en-US');
     await expect(kit).toHaveTitle('TOS Kit example');
     await kit.getByRole('button', { name: 'Show sample diagnostic', exact: true }).click();
     await expect(kit.getByRole('heading', { name: 'Connection diagnostics', exact: true })).toBeVisible();
