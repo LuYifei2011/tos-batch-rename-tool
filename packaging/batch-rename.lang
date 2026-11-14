@@ -2,180 +2,180 @@
 name = "批量重命名"
 auth = "Lu Yifei"
 descript = "预览并批量修改文件名，支持多规则组合、冲突检查、执行记录和撤销。"
-release_note = "0.1.0 Beta：批量重命名、冲突预览、执行记录与撤销，支持中英文界面及浅深主题。"
+release_note = "0.1.1 Beta：更新应用界面与图标，修复应用组缺失时的安装问题，规范安装升级与服务启停。"
 important = ""
 
 [zh-hk]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [en-us]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [ko-kr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [ja-jp]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [de-de]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [fr-fr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [it-it]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [es-es]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [hu-hu]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [pl-pl]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [tr-tr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [ru-ru]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [pt-pt]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [cs-cz]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [da-dk]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [nl-nl]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [nb-no]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [sv-se]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [el-gr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [ro-ro]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [th-th]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [vi-vn]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [id-id]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [ar-sa]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""
 
 [he-il]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.0 Beta: batch renaming, conflict previews, execution records and undo, with Chinese and English UI and light and dark themes."
+release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
 important = ""

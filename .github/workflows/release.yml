@@ -79,7 +79,7 @@ jobs:
             "$tool" -c "$package"
           done
       - name: Exercise the installed service with real systemd
-        run: sudo --preserve-env=GITHUB_ACTIONS python3 scripts/test-service.py build/batch-rename_0.1.0_amd64.deb
+        run: sudo --preserve-env=GITHUB_ACTIONS python3 scripts/test-service.py build/batch-rename_0.1.1_amd64.deb
       - name: Calculate checksums
         working-directory: build
         run: sha256sum -- *.deb > SHA256SUMS

@@ -24,8 +24,8 @@ npm run build
 go vet ./server
 python3 scripts/build-package.py amd64
 python3 scripts/build-package.py arm64
-python3 scripts/verify-package.py build/batch-rename_0.1.0_amd64.deb build/batch-rename_0.1.0_arm64.deb
-python3 scripts/check-security.py build/batch-rename_0.1.0_amd64.deb build/batch-rename_0.1.0_arm64.deb
+python3 scripts/verify-package.py build/batch-rename_0.1.1_amd64.deb build/batch-rename_0.1.1_arm64.deb
+python3 scripts/check-security.py build/batch-rename_0.1.1_amd64.deb build/batch-rename_0.1.1_arm64.deb
 ```
 
 `npm test` 依次运行下列测试集，CI 使用同一入口：
@@ -50,7 +50,7 @@ python3 scripts/check-security.py build/batch-rename_0.1.0_amd64.deb build/batch
 - Ubuntu 构建任务安装 amd64 deb，以真实 systemd 验证账号延后创建、启动前权限初始化、非 root 业务进程、故障恢复、升级及卸载；此检查不能代替 TOS 真机验收。
 - Linux 构建两个架构，执行依赖与二进制漏洞扫描、项目校验和官方包自测，生成 `SHA256SUMS`。
 - 只有标签发布任务具有 `contents: write` 权限，使用仓库内置 `GITHUB_TOKEN`。
-- 标签必须与源码版本一致，例如版本 `0.1.0` 对应 `v0.1.0`。
+- 标签必须与源码版本一致，例如版本 `0.1.1` 对应 `v0.1.1`。
 - `packaging/config.ini` 的 `beta: true` 对应 GitHub 预发布；`false` 对应正式发布。
 - 发布附件包含两个 deb 及校验和；同一标签的已有 Release 不会被覆盖。
 
@@ -64,8 +64,8 @@ python3 scripts/check-security.py build/batch-rename_0.1.0_amd64.deb build/batch
 4. 为待发布提交创建并推送签名标签：
 
 ```sh
-git tag -s v0.1.0 -m "Release v0.1.0"
-git push origin v0.1.0
+git tag -s v0.1.1 -m "Release v0.1.1"
+git push origin v0.1.1
 ```
 
 推送标签即触发自动发布。升级版本时使用对应的新标签；修正已发布版本应递增版本号。
