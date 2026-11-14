@@ -43,7 +43,8 @@ for name in ("batch-rename", primary_group):
 try:
     run("dpkg", "--install", package)
     assert not (app / "data").exists(), "installation must defer permissions until the account exists"
-    assert (app / "site/index.html").is_file()
+    for name in ("site", "webui"):
+        assert (app / name / "index.html").is_file()
     installed_gid = grp.getgrnam("batch-rename").gr_gid
     assert installed_gid > 0, "postinst must create the group before the TOS user exists"
     assert run("id", "batch-rename", check=False).returncode != 0
@@ -88,15 +89,21 @@ try:
     run("systemctl", "reset-failed", "batch-rename.service", "batch-rename.socket")
     run("systemctl", "start", "batch-rename.service")
     wait_state("active")
-    (app / "site/stale.js").write_text("old frontend")
+    for name in ("site", "webui"):
+        (app / name / "index.html").write_text("old frontend")
+        (app / name / "stale.js").write_text("old frontend")
     run("dpkg", "--install", package)
     wait_state("active")
     assert grp.getgrnam("batch-rename").gr_gid == installed_gid
-    assert not (app / "site/stale.js").exists()
+    for name in ("site", "webui"):
+        assert not (app / name / "stale.js").exists()
+        assert (app / name / "index.html").read_text() != "old frontend"
+    assert (app / "site/index.html").read_bytes() == (app / "webui/index.html").read_bytes()
     record.write_text("retain this record")
     run("dpkg", "--remove", "batch-rename")
     run("dpkg", "--purge", "batch-rename")
-    assert not (app / "site").exists()
+    for name in ("site", "webui"):
+        assert not (app / name).exists()
     assert not Path("/var/api/batch-rename.sock").exists()
     assert record.read_text() == "retain this record"
     assert run("systemctl", "is-enabled", "batch-rename.service", check=False).returncode != 0

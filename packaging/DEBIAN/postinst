@@ -3,7 +3,7 @@ set -eu
 app=/usr/local/batch-rename
 case "${1:-}" in
 configure)
-    for name in data site site.next site.previous; do
+    for name in data site site.next site.previous webui webui.next webui.previous; do
         if [ -L "$app/$name" ] || { [ -e "$app/$name" ] && [ ! -d "$app/$name" ]; }; then
             echo "batch-rename: $app/$name must be a real directory" >&2
             exit 1
@@ -47,22 +47,25 @@ configure)
             rm -f -- "$fragment"
         fi
     done
-    if [ -d "$app/site.previous" ] && [ ! -d "$app/site" ]; then mv "$app/site.previous" "$app/site"; fi
-    rm -rf -- "$app/site.next" "$app/site.previous"
-    install -d -m 0755 "$app/site.next"
-    trap 'rm -rf -- "$app/site.next"' 0
-    tar -xjf "$app/webui.bz2" -C "$app/site.next"
-    if [ ! -f "$app/site.next/index.html" ]; then
-        echo "batch-rename: frontend archive has no index.html" >&2
-        exit 1
-    fi
-    if [ -d "$app/site" ]; then mv "$app/site" "$app/site.previous"; fi
-    if ! mv "$app/site.next" "$app/site"; then
-        if [ -d "$app/site.previous" ]; then mv "$app/site.previous" "$app/site"; fi
-        exit 1
-    fi
-    rm -rf -- "$app/site.previous"
-    trap - 0
+    # Refresh both the backend fallback and TOS static entry on upgrade.
+    for name in site webui; do
+        if [ -d "$app/$name.previous" ] && [ ! -d "$app/$name" ]; then mv "$app/$name.previous" "$app/$name"; fi
+        rm -rf -- "$app/$name.next" "$app/$name.previous"
+        install -d -m 0755 "$app/$name.next"
+        trap 'rm -rf -- "$app/$name.next"' 0
+        tar -xjf "$app/webui.bz2" -C "$app/$name.next"
+        if [ ! -f "$app/$name.next/index.html" ]; then
+            echo "batch-rename: frontend archive has no index.html" >&2
+            exit 1
+        fi
+        if [ -d "$app/$name" ]; then mv "$app/$name" "$app/$name.previous"; fi
+        if ! mv "$app/$name.next" "$app/$name"; then
+            if [ -d "$app/$name.previous" ]; then mv "$app/$name.previous" "$app/$name"; fi
+            exit 1
+        fi
+        rm -rf -- "$app/$name.previous"
+        trap - 0
+    done
     systemctl daemon-reload
     systemctl enable "$app/init.d/batch-rename.service" "$app/init.d/batch-rename.socket"
     if id batch-rename >/dev/null 2>&1; then

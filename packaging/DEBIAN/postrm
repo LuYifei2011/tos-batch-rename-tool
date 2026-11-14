@@ -3,7 +3,7 @@ set -eu
 case "${1:-}" in
 remove|purge)
     app=/usr/local/batch-rename
-    for name in site site.next site.previous; do
+    for name in site site.next site.previous webui webui.next webui.previous; do
         if [ -L "$app/$name" ]; then
             rm -f -- "$app/$name"
         elif [ -d "$app/$name" ]; then
@@ -14,4 +14,5 @@ remove|purge)
     systemctl daemon-reload
     ;;
 esac
-# Runtime records and user files are deliberately preserved.
+# This package script preserves runtime records and user files.
+# TOS App Center may separately delete application data when requested.

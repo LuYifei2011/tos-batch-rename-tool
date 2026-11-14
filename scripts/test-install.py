@@ -99,7 +99,8 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
     def test_install_defers_start_until_platform_account_exists(self):
         result = self.hook("postinst", "configure")
         self.assertIn("TOS to create", result.stderr)
-        self.assertEqual((self.app / "site/index.html").read_bytes(), b"new frontend")
+        for name in ("site", "webui"):
+            self.assertEqual((self.app / name / "index.html").read_bytes(), b"new frontend")
         self.assertFalse((self.app / "data").exists())
         self.assertEqual(len(list(self.units.iterdir())), 2)
         self.assertTrue(all(path.is_symlink() for path in self.units.iterdir()))
@@ -145,15 +146,18 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
         record = history / "existing.json"
         record.write_text('{"state":"interrupted"}')
         self.hook("postinst", "configure")
-        (self.app / "site/assets/old.js").write_text("old")
+        for name in ("site", "webui"):
+            (self.app / name / "index.html").write_text("old frontend")
+            (self.app / name / "assets/old.js").write_text("old")
         self.archive({"index.html": b"upgraded", "assets/current.js": b"current"})
         self.hook("prerm", "upgrade")
         self.hook("postinst", "configure", "0.0.1")
-        self.assertEqual((self.app / "site/index.html").read_bytes(), b"upgraded")
-        self.assertEqual(list((self.app / "site/assets").iterdir()), [self.app / "site/assets/current.js"])
+        for name in ("site", "webui"):
+            self.assertEqual((self.app / name / "index.html").read_bytes(), b"upgraded")
+            self.assertEqual(list((self.app / name / "assets").iterdir()), [self.app / name / "assets/current.js"])
+            self.assertFalse((self.app / (name + ".previous")).exists())
+            self.assertFalse((self.app / (name + ".next")).exists())
         self.assertEqual(record.read_text(), '{"state":"interrupted"}')
-        self.assertFalse((self.app / "site.previous").exists())
-        self.assertFalse((self.app / "site.next").exists())
 
     def test_failed_extraction_preserves_working_frontend(self):
         self.hook("postinst", "configure")
@@ -163,8 +167,9 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
             else:
                 self.archive({"assets/only.js": b"missing index"})
             self.hook("postinst", "configure", ok=False)
-            self.assertEqual((self.app / "site/index.html").read_bytes(), b"new frontend")
-            self.assertFalse((self.app / "site.next").exists())
+            for name in ("site", "webui"):
+                self.assertEqual((self.app / name / "index.html").read_bytes(), b"new frontend")
+                self.assertFalse((self.app / (name + ".next")).exists())
 
     def test_recovery_after_interrupted_frontend_swap(self):
         self.hook("postinst", "configure")
@@ -178,7 +183,7 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
         external.mkdir()
         marker = external / "keep"
         marker.write_text("user data")
-        for name in ("data", "site", "site.next", "site.previous"):
+        for name in ("data", "site", "site.next", "site.previous", "webui", "webui.next", "webui.previous"):
             with self.subTest(name=name):
                 path = self.app / name
                 path.symlink_to(external, target_is_directory=True)
@@ -199,7 +204,8 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
         shutil.rmtree(self.app / "init.d")
         for action in ("remove", "purge", "purge"):
             self.hook("postrm", action)
-            self.assertFalse((self.app / "site").exists())
+            for name in ("site", "webui"):
+                self.assertFalse((self.app / name).exists())
             self.assertFalse((self.base / "app.sock").exists())
             self.assertEqual(record.read_text(), "keep")
         self.assertEqual(list(self.units.iterdir()), [])
@@ -209,9 +215,11 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
         external = self.base / "external"
         external.mkdir()
         (external / "keep").write_text("user data")
-        (self.app / "site").symlink_to(external, target_is_directory=True)
+        for name in ("site", "webui"):
+            (self.app / name).symlink_to(external, target_is_directory=True)
         self.hook("postrm", "purge")
-        self.assertFalse((self.app / "site").is_symlink())
+        for name in ("site", "webui"):
+            self.assertFalse((self.app / name).is_symlink())
         self.assertEqual((external / "keep").read_text(), "user data")
 
     def test_migration_from_copied_units(self):
