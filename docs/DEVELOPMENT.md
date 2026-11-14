@@ -19,15 +19,22 @@ sh scripts/dev.sh
 python3 scripts/check-metadata.py
 npm test
 npm run build
-go test -race ./server
 go vet ./server
-python3 scripts/test-install.py
-python3 scripts/test-release.py
 python3 scripts/build-package.py amd64
 python3 scripts/build-package.py arm64
 python3 scripts/verify-package.py build/batch-rename_0.1.0_amd64.deb build/batch-rename_0.1.0_arm64.deb
 python3 scripts/check-security.py build/batch-rename_0.1.0_amd64.deb build/batch-rename_0.1.0_arm64.deb
 ```
+
+`npm test` 依次运行下列测试集，CI 使用同一入口：
+
+| 命令 | 覆盖范围 |
+| --- | --- |
+| `npm run test:core` | 重命名规则、应用 API 配置、偏好接入和业务翻译 |
+| `npm run test:server` | Go 业务后端，包含竞态检测 |
+| `npm run test:packaging` | 安装升级与数据保留、发布元数据及工具链检查 |
+
+通用 API 重试、凭据处理、诊断状态和偏好解析、回退、超时由 App Kit 的 `api.test.ts`、`preferences.test.ts` 覆盖。应用侧保留固定版本依赖的集成检查：代理路由与 GET/POST 简写、中文错误映射、会话失效跳转、访问失败锁定、自定义版本头和任务路径脱敏，以及本应用偏好存储与 Vue 状态绑定。业务翻译在 `src/core/i18n.test.ts` 单独维护。
 
 打包脚本先核对 `.go-version`，禁用自动切换 Go 工具链，再校验元数据并重新构建前端，再交叉编译静态 Linux ELF，生成 deb，附带工具链版本、架构和二进制 SHA-256 的 `build-info.json`。安全检查使用 `.govulncheck-version` 固定的官方工具，扫描 npm 锁定依赖、两个 Linux 架构的后端源码及指定包内的实际二进制。可用 `--go /path/to/go` 指定 Go 工具链。打包可在 macOS 运行，安装包结构校验会比对源码元数据、当前前端构建和许可证。
 
@@ -78,7 +85,7 @@ npm install --save-exact \
 go get github.com/LuYifei2011/tos-app-kit/go@v0.2.0
 ```
 
-库自己的单元测试和构建在上游 CI 执行。应用保留集成回归。运行 `scripts/test-kit-ui.cjs` 时，第一地址为使用临时数据目录的本机演示后端，第二地址为 TOS App Kit 的独立示例；详见上游文档。此脚本需要 Playwright，可通过 `PLAYWRIGHT_MODULE` 指向已有安装。
+库自己的单元测试和构建在上游 CI 执行。应用保留逻辑与接口集成回归。界面由人工审核：使用本机演示模式检查目录选择、规则预览、重命名与撤销、主题语言及偏好保留、连接诊断、键盘操作和窄屏布局，再按[兼容性说明](COMPATIBILITY.md)完成目标设备验收。
 
 ## 项目文件
 

@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vue-tsc --noEmit && vite build",
-    "test": "node --experimental-strip-types --test src/core/*.test.ts",
+    "test": "npm run test:core && npm run test:server && npm run test:packaging",
+    "test:core": "node --experimental-strip-types --test src/core/*.test.ts",
+    "test:server": "go test -race -count=1 ./server",
+    "test:packaging": "python3 scripts/test-install.py && python3 scripts/test-release.py",
     "bench": "node --experimental-strip-types src/core/benchmark.ts"
   },
   "dependencies": {
