@@ -9,6 +9,23 @@ configure)
             exit 1
         fi
     done
+    # TOS creates the user, potentially after postinst. Prepare the dedicated
+    # group now so Group=/SocketGroup= can resolve when TOS enables the app.
+    if group_record=$(getent group batch-rename); then
+        :
+    else
+        lookup_status=$?
+        if [ "$lookup_status" != 2 ]; then
+            echo "batch-rename: group lookup failed ($lookup_status)" >&2
+            exit "$lookup_status"
+        fi
+        groupadd --system batch-rename
+        group_record=$(getent group batch-rename)
+    fi
+    IFS=: read -r group_name group_password group_gid group_members <<< "$group_record"
+    case "$group_gid" in
+        ''|0|*[!0-9]*) echo "batch-rename: dedicated group must have a non-root GID" >&2; exit 1 ;;
+    esac
     # Retire only byte-identical units written by the earlier installer.
     for name in batch-rename.service batch-rename.socket batch-rename-setup.service; do
         if [ "$(systemctl show --property=LoadState --value "$name")" = not-found ]; then continue; fi

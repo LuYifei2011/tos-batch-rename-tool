@@ -27,6 +27,21 @@ class InstallTests(unittest.TestCase):
         self.env = dict(os.environ, PATH=f"{self.bin}:{Path(shutil.which('python3')).parent}:/usr/bin:/bin",
                         MOCK_ACCOUNT="0", MOCK_LOG=str(self.log), MOCK_UNITS=str(self.units))
         self.command("id", 'test "$MOCK_ACCOUNT" = 1')
+        self.group = self.base / "group"
+        self.env.update(MOCK_GROUP=str(self.group), MOCK_GROUP_FAILURE="0", MOCK_LOOKUP_FAILURE="0")
+        self.command("getent", '''
+test "$1" = group && test "$2" = batch-rename
+test "$MOCK_LOOKUP_FAILURE" = 0 || exit 3
+test -f "$MOCK_GROUP" || exit 2
+cat "$MOCK_GROUP"
+''')
+        self.command("groupadd", '''
+echo "groupadd $*" >> "$MOCK_LOG"
+test "$MOCK_GROUP_FAILURE" = 0 || exit 10
+echo batch-rename:x:823: > "$MOCK_GROUP"
+''')
+        for name in ("useradd", "usermod"):
+            self.command(name, 'echo unexpected-account-change >> "$MOCK_LOG"; exit 99')
         self.python_command("systemctl", '''
 import os,pathlib,sys
 a=sys.argv[1:]; units=pathlib.Path(os.environ['MOCK_UNITS'])
@@ -36,6 +51,7 @@ if a[0]=='show':
  if '--property=LoadState' in a: print('loaded' if p.exists() else 'not-found')
  elif '--property=FragmentPath' in a: print(p.resolve() if p.is_symlink() else p)
 elif a[0]=='enable':
+ if not pathlib.Path(os.environ['MOCK_GROUP']).exists(): sys.exit('group missing')
  for name in a[1:]:
   source=pathlib.Path(name); target=units/source.name
   if target.is_symlink(): target.unlink()
@@ -88,9 +104,39 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
         self.assertEqual(len(list(self.units.iterdir())), 2)
         self.assertTrue(all(path.is_symlink() for path in self.units.iterdir()))
         self.assertNotIn("systemctl start", self.log.read_text())
+        self.assertTrue(self.log.read_text().startswith("groupadd --system batch-rename\n"))
         self.env["MOCK_ACCOUNT"] = "1"
         self.hook("postinst", "configure")
         self.assertIn("systemctl start batch-rename.service", self.log.read_text())
+        self.assertEqual(self.log.read_text().count("groupadd "), 1)
+        self.assertNotIn("unexpected-account-change", self.log.read_text())
+
+    def test_existing_group_is_preserved(self):
+        self.group.write_text("batch-rename:x:945:member\n")
+        self.env["MOCK_ACCOUNT"] = "1"
+        self.hook("postinst", "configure")
+        self.hook("postinst", "configure", "0.1.0")
+        self.assertEqual(self.group.read_text(), "batch-rename:x:945:member\n")
+        self.assertNotIn("groupadd", self.log.read_text())
+        self.assertNotIn("unexpected-account-change", self.log.read_text())
+
+    def test_group_failure_stops_before_service_registration(self):
+        for failure in ("MOCK_GROUP_FAILURE", "MOCK_LOOKUP_FAILURE"):
+            with self.subTest(failure=failure):
+                self.log.unlink(missing_ok=True)
+                self.env[failure] = "1"
+                self.hook("postinst", "configure", ok=False)
+                self.env[failure] = "0"
+                log = self.log.read_text() if self.log.exists() else ""
+                self.assertNotIn("systemctl", log)
+                self.assertEqual(list(self.units.iterdir()), [])
+
+    def test_invalid_group_id_is_rejected(self):
+        for gid in ("0", "", "invalid"):
+            with self.subTest(gid=gid):
+                self.group.write_text(f"batch-rename:x:{gid}:\n")
+                self.hook("postinst", "configure", ok=False)
+                self.assertFalse(self.log.exists())
 
     def test_upgrade_replaces_assets_and_preserves_records(self):
         self.env["MOCK_ACCOUNT"] = "1"

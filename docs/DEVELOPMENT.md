@@ -99,3 +99,5 @@ go get github.com/LuYifei2011/tos-app-kit/go@v0.3.1
 - `.local/`：本地演示运行数据，不纳入版本控制。
 
 当前界面规范见 [DESIGN.md](DESIGN.md)。
+
+安装时由 `postinst configure` 检查并创建缺失的应用同名系统组，已有组及 GID 保持不变；组查询或创建失败会终止安装。应用用户仍由 TOS 创建，账号尚未就绪时只注册服务，之后由应用中心启用。服务及 socket 使用同名组，卸载保留该组。Linux 生命周期测试覆盖先安装、后创建用户，且用户主组与应用同名组不同的场景。

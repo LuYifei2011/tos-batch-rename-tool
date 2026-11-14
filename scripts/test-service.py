@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Exercise the packaged service on an isolated GitHub Actions Linux runner."""
+import grp
 import http.client
 import os
 from pathlib import Path
@@ -34,13 +35,26 @@ if app.exists() or app.is_symlink() or run("id", "batch-rename", check=False).re
     sys.exit("Refusing to replace an existing application or account")
 package = str(Path(sys.argv[1]).resolve())
 created_account = False
+created_primary_group = False
+primary_group = "batch-rename-runtime"
+for name in ("batch-rename", primary_group):
+    if run("getent", "group", name, check=False).returncode == 0:
+        sys.exit(f"Refusing to replace existing group {name}")
 try:
     run("dpkg", "--install", package)
     assert not (app / "data").exists(), "installation must defer permissions until the account exists"
     assert (app / "site/index.html").is_file()
-    run("useradd", "--system", "--user-group", "--no-create-home", "--shell", "/usr/sbin/nologin", "batch-rename")
+    installed_gid = grp.getgrnam("batch-rename").gr_gid
+    assert installed_gid > 0, "postinst must create the group before the TOS user exists"
+    assert run("id", "batch-rename", check=False).returncode != 0
+    # Match TOS accounts whose primary group differs from the dedicated group.
+    run("groupadd", "--system", primary_group)
+    created_primary_group = True
+    run("useradd", "--system", "--no-user-group", "--gid", primary_group, "--no-create-home", "--shell", "/usr/sbin/nologin", "batch-rename")
     created_account = True
     account = pwd.getpwnam("batch-rename")
+    assert account.pw_gid == grp.getgrnam(primary_group).gr_gid
+    assert installed_gid != account.pw_gid
     run("systemctl", "reset-failed", "batch-rename.service", "batch-rename.socket")
     run("systemctl", "start", "batch-rename.service")
     wait_state("active")
@@ -57,6 +71,10 @@ try:
     assert data.stat().st_uid == account.pw_uid and data.stat().st_mode & 0o777 == 0o700
     pid = int(run("systemctl", "show", "--property=MainPID", "--value", "batch-rename.service").stdout)
     assert Path(f"/proc/{pid}").stat().st_uid == account.pw_uid, "business process must be non-root"
+    assert Path(f"/proc/{pid}").stat().st_gid == installed_gid
+    assert data.stat().st_gid == account.pw_gid
+    assert Path("/var/api/batch-rename.sock").stat().st_uid == account.pw_uid
+    assert Path("/var/api/batch-rename.sock").stat().st_gid == installed_gid
     assert Path("/var/api/batch-rename.sock").stat().st_mode & 0o777 == 0o660
     run("systemctl", "stop", "batch-rename.service")
     assert not Path("/var/api/batch-rename.sock").exists()
@@ -73,6 +91,7 @@ try:
     (app / "site/stale.js").write_text("old frontend")
     run("dpkg", "--install", package)
     wait_state("active")
+    assert grp.getgrnam("batch-rename").gr_gid == installed_gid
     assert not (app / "site/stale.js").exists()
     record.write_text("retain this record")
     run("dpkg", "--remove", "batch-rename")
@@ -82,7 +101,7 @@ try:
     assert record.read_text() == "retain this record"
     assert run("systemctl", "is-enabled", "batch-rename.service", check=False).returncode != 0
     assert run("systemctl", "is-enabled", "batch-rename.socket", check=False).returncode != 0
-    print("PASS systemd: delayed account, root initialization, non-root HTTP service, stop, failure recovery, upgrade and removal")
+    print("PASS systemd: install-time group provisioning, delayed account, dedicated GID, socket ownership, root initialization, non-root HTTP, recovery, upgrade and removal")
 except Exception:
     print(run("journalctl", "-u", "batch-rename.service", "-n", "80", "--no-pager", check=False).stdout, file=sys.stderr)
     raise
@@ -91,5 +110,9 @@ finally:
     run("dpkg", "--purge", "batch-rename", check=False)
     if created_account:
         run("userdel", "batch-rename", check=False)
+    if created_primary_group:
+        run("groupdel", primary_group, check=False)
+    # Uninstall retains the group; remove it only in this isolated test fixture.
+    run("groupdel", "batch-rename", check=False)
     if app.is_dir() and not app.is_symlink():
         shutil.rmtree(app)
