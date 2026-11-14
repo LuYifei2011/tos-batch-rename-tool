@@ -82,6 +82,9 @@ Description: Batch file renaming with conflict previews, execution records and u
 for p in control.iterdir():
     p.chmod(0o644 if p.name == "control" else 0o755)
 (control / "conffiles").write_text("")
+for path in stage.rglob("*"):
+    if path.is_file() and (path.parent == control or path.suffix in {".ini", ".lang", ".service", ".socket"}):
+        path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n"))
 def archive(directory, excludes=()):
     data = io.BytesIO()
     with tarfile.open(fileobj=data, mode="w:gz", format=tarfile.GNU_FORMAT) as tar:

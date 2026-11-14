@@ -44,8 +44,10 @@ for arg in sys.argv[1:]:
         assert f"Maintainer: {source_package['author']['name']} <{source_package['author']['email']}>" in fields
         assert f"Homepage: {source_config['help']}" in fields
         for name in ["postinst","prerm","postrm"]:
-            assert control.getmember("./"+name).mode & 0o111
+            assert control.getmember("./"+name).mode == 0o755
             text=control.extractfile("./"+name).read().decode()
+            assert text.startswith("#!/bin/bash\n") and "\r" not in text
+            assert text == (ROOT / "packaging/DEBIAN" / name).read_text()
             assert "useradd" not in text and "chmod 777" not in text
     with tarfile.open(fileobj=io.BytesIO(members["data.tar.gz"])) as tar:
         names=tar.getnames()
@@ -56,10 +58,11 @@ for arg in sys.argv[1:]:
         expected_config = dict(source_config, platform="x86_64" if arch == "amd64" else "aarch64")
         assert config == expected_config, "Packaged metadata differs from source"
         assert config.get("help"), "Required help URL is missing"
-        assert get("batch-rename.lang") == (ROOT / "packaging/batch-rename.lang").read_bytes()
+        assert get("batch-rename.lang") == (ROOT / "packaging/batch-rename.lang").read_bytes().replace(b"\r\n", b"\n")
         for name in ["README.md", "THIRD_PARTY_NOTICES.md", "LICENSE"]:
             assert get(name) == (ROOT / name).read_bytes(), f"Packaged {name} differs from source"
         assert config["version"]==version
+        assert config["low_version"] == "7.0"
         assert config["id"]=="batch-rename"
         assert config["type"]=="iframe" and "open_path" not in config
         assert config["path"]=="/batch-rename/"
@@ -93,7 +96,7 @@ for arg in sys.argv[1:]:
         assert b"PartOf=batch-rename.service" in get("init.d/batch-rename.socket")
         assert b"batch-rename-setup" not in get("init.d/batch-rename.socket")
         for unit in ("batch-rename.service", "batch-rename.socket"):
-            assert get("init.d/" + unit) == (ROOT / "packaging/init.d" / unit).read_bytes()
+            assert get("init.d/" + unit) == (ROOT / "packaging/init.d" / unit).read_bytes().replace(b"\r\n", b"\n")
         with tarfile.open(fileobj=io.BytesIO(get("webui.bz2")),mode="r:bz2") as web:
             packaged_files = {member.name: web.extractfile(member).read() for member in web if member.isfile()}
             built_files = {str(path.relative_to(ROOT / "dist")): path.read_bytes() for path in (ROOT / "dist").rglob("*") if path.is_file()}

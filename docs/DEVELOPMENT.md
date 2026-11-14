@@ -15,6 +15,8 @@ sh scripts/dev.sh
 
 ## 验证与打包
 
+生命周期脚本遵循 [TOS Deb 开发指南 §8.14](https://github.com/terramaster-tos/tos-app-pkg-tools/blob/main/TOS%207%20Application%20Development%20Guide/08_Deb_Development.md)，使用 `#!/bin/bash` 和 0755 权限。`low_version` 为纯数字 `7.0`，打包时统一脚本及平台配置的 LF 换行。包验证同时核对脚本内容、解释器和权限。
+
 ```sh
 python3 scripts/check-metadata.py
 npm test

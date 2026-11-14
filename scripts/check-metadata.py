@@ -26,6 +26,10 @@ def validate(root, tag=None):
             raise ValueError(f"Missing required config.ini field: {key}")
     if type(config.get("beta")) is not bool or type(config["exec"]) is not bool:
         raise ValueError("beta and exec must be booleans")
+    if config.get("low_version") not in (None, ""):
+        minimum = config["low_version"]
+        if not isinstance(minimum, str) or not re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?", minimum) or tuple(map(int, minimum.split("."))) < (7, 0):
+            raise ValueError("low_version must be a numeric TOS version >= 7.0")
     if package["license"] != "MIT" or lock["packages"][""].get("license") != "MIT":
         raise ValueError("Package and lockfile licenses must be MIT")
     author = package["author"]

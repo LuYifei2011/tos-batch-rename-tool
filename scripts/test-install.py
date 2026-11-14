@@ -73,7 +73,7 @@ for name in sys.argv[1:]: print(hashlib.sha256(open(name,'rb').read()).hexdigest
     def hook(self, name, *args, ok=True):
         text = (ROOT / "packaging/DEBIAN" / name).read_text().replace("/usr/local/batch-rename", str(self.app))
         text = text.replace("/var/api/batch-rename.sock", str(self.base / "app.sock"))
-        result = subprocess.run(["/bin/sh", "-s", "--", *args], input=text, env=self.env, text=True, capture_output=True)
+        result = subprocess.run(["/bin/bash", "-s", "--", *args], input=text, env=self.env, text=True, capture_output=True)
         if ok:
             self.assertEqual(result.returncode, 0, result.stderr)
         else:
