@@ -2,8 +2,9 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import './style.css'
 import { initializePreferences } from './core/preferences'
-const disposePreferences = initializePreferences()
+import { tos } from './core/app'
+initializePreferences()
 const app = createApp(App)
-app.onUnmount(disposePreferences)
+app.use(tos)
 app.mount('#app')
-if (import.meta.hot) import.meta.hot.dispose(disposePreferences)
+if (import.meta.hot) import.meta.hot.dispose(() => app.unmount())

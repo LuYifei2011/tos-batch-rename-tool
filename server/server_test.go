@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	tosapp "github.com/LuYifei2011/tos-app-kit/go"
 	"time"
 )
 
@@ -235,7 +237,7 @@ func TestHTTPGates(t *testing.T) {
 		send(w, 200, map[string]any{"code": true, "is_login": true, "data": []any{}})
 	}))
 	defer upstream.Close()
-	a := &App{store: s, mode: "tos", platform: platformClient(), platformBase: upstream.URL}
+	a := &App{store: s, mode: "tos", platform: tosapp.NewPlatformClient(), platformBase: upstream.URL}
 	for _, tc := range []struct {
 		name, cookie, csrf, origin string
 		want                       int

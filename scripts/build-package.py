@@ -49,6 +49,10 @@ for name in ["COMPATIBILITY.md", "DEVELOPMENT.md", "RELEASE_NOTES.md", "DESIGN.m
     shutil.copy(ROOT / "docs" / name, app / "docs" / name)
 licenses = app / "licenses"
 licenses.mkdir()
+core_module = json.loads(subprocess.check_output([args.go, "list", "-m", "-json", "github.com/LuYifei2011/tos-app-kit/go"], cwd=ROOT, env=env, text=True))
+shutil.copy(Path(core_module["Dir"]) / "LICENSE", licenses / "tos-app-core-go.txt")
+for name in ["tos-app-core", "tos-app-ui-kit"]:
+    shutil.copy(ROOT / "node_modules" / name / "LICENSE", licenses / (name + ".txt"))
 for name in ["vue", "@vue/shared", "@vue/reactivity", "@vue/runtime-core", "@vue/runtime-dom"]:
     shutil.copy(ROOT / "node_modules" / name / "LICENSE", licenses / (name.replace("/", "-").replace("@", "") + ".txt"))
 goroot = Path(subprocess.check_output([args.go, "env", "GOROOT"], env=env, text=True).strip())

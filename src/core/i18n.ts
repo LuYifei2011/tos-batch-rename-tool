@@ -1,7 +1,8 @@
-import { ref } from 'vue'
+import { createTranslator } from 'tos-app-core'
+import { tos } from './app.ts'
 
-export type Locale = 'zh-CN' | 'en-US'
-export const locale = ref<Locale>('zh-CN')
+export type { Locale } from 'tos-app-core'
+export const locale = tos.language
 
 // Source messages also identify errors returned by the worker and older backends.
 export const english: Record<string, string> = {
@@ -79,15 +80,7 @@ export const english: Record<string, string> = {
   '正在读取共享文件夹…': 'Loading shared folders…',
   '暂无可访问的共享文件夹': 'No accessible shared folders',
   '点击刷新，重新读取已授权目录。': 'Refresh to reload your authorized folders.',
-  '连接诊断': 'Connection diagnostics', '前端 / 后端版本': 'Frontend / backend version',
-  '响应未提供': 'Not provided', '响应': 'Response', '网络失败': 'Network failure',
-  '页面可读取': 'Readable by this page', '页面未读取到': 'Not read by this page',
-  '页面设置 CSRF 请求头': 'CSRF header set by this page', '是': 'Yes', '否': 'No',
-  '报告仅记录凭据是否可读，不包含 Cookie 或令牌值。页面读取结果不能代表系统最终发送的全部凭据。': 'This report records whether credentials are readable, without cookie or token values. What the page can read does not represent all credentials sent by the system.',
-  '查看完整报告': 'View full report', '连接诊断报告': 'Connection diagnostic report', '选中报告': 'Select report',
   '语言与主题': 'Language and theme', '关闭设置': 'Close settings',
-  '语言': 'Language', '跟随浏览器': 'Follow browser', '跟随 TOS': 'Follow TOS',
-  '主题': 'Theme', '浅色': 'Light', '深色': 'Dark',
   '文件名不能为空或为点号': 'The name cannot be empty, “.” or “..”',
   '包含不兼容的文件名字符': 'Contains unsupported filename characters',
   '名称不能以空格或点结尾': 'The name cannot end with a space or dot',
@@ -153,13 +146,7 @@ const singular: Record<string, string> = {
   '{count} 个项目 · 已选 {selected} 项': '{count} item · {selected} selected',
 }
 
-export function t(source: string, params: Record<string, string | number> = {}): string {
-  let text = source
-  if (locale.value === 'en-US' && Object.hasOwn(english, source)) {
-    text = (params.count === 1 || params.count === '1') && Object.hasOwn(singular, source) ? singular[source]! : english[source]!
-  }
-  return text.replace(/\{(\w+)\}/g, (token, key: string) => params[key] === undefined ? token : String(params[key]))
-}
+export const t = createTranslator(() => locale.value, english, singular)
 
 export const number = (value: number) => value.toLocaleString(locale.value)
 

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { api, backendVersion, connectionDiagnostic, denied } from './api.ts'
+import { tosApp } from './app.ts'
 
 const originalFetch = globalThis.fetch
 const originalDocument = Object.getOwnPropertyDescriptor(globalThis, 'document')
@@ -8,9 +9,7 @@ const originalLocation = Object.getOwnPropertyDescriptor(globalThis, 'location')
 let redirected = ''
 
 beforeEach(() => {
-  denied.value = ''
-  backendVersion.value = ''
-  connectionDiagnostic.value = null
+  tosApp.api.reset()
   redirected = ''
   Object.defineProperty(globalThis, 'document', { configurable: true, value: { cookie: 'TMSESSNAME=test-session; X-Csrf-Token=test-csrf' } })
   Object.defineProperty(globalThis, 'location', { configurable: true, value: { pathname: '/batch-rename/', assign: (url: string) => { redirected = url } } })
@@ -21,7 +20,7 @@ afterEach(() => {
     if (descriptor) Object.defineProperty(globalThis, key, descriptor)
     else Reflect.deleteProperty(globalThis, key)
   }
-  denied.value = ''
+  tosApp.api.reset()
 })
 
 test('API uses the platform proxy for desktop, alternate WebView entry paths and local preview', async () => {
@@ -120,7 +119,7 @@ test('empty gateway rejection exposes a sanitized report and no invented backend
 
 test('unreadable CSRF does not set an empty header or bypass gateway rejection', async () => {
   for (const blocked of [false, true]) {
-    denied.value = ''
+    tosApp.api.reset()
     Object.defineProperty(globalThis, 'document', { configurable: true, value: blocked
       ? { get cookie() { throw new Error('blocked') } } : { cookie: '' } })
     globalThis.fetch = async (_, options) => {

@@ -26,12 +26,12 @@ beforeEach(() => {
 afterEach(() => {
   dispose?.()
   dispose = undefined
+  locale.value = 'zh-CN'
   for (const key of keys) {
     const descriptor = originals.get(key)
     if (descriptor) Object.defineProperty(globalThis, key, descriptor)
     else Reflect.deleteProperty(globalThis, key)
   }
-  locale.value = 'zh-CN'
 })
 
 test('browser language negotiation and stored preference validation', () => {

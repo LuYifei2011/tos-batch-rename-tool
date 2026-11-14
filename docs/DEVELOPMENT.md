@@ -6,6 +6,7 @@
 
 ```sh
 npm ci
+go mod download
 npm run build
 sh scripts/dev.sh
 ```
@@ -59,6 +60,21 @@ git push origin v0.1.0
 ```
 
 推送标签即触发自动发布。升级版本时使用对应的新标签；修正已发布版本应递增版本号。
+
+## 公共库依赖
+
+浏览器 core、UI kit 和后端运行支持由独立仓库 [TOS App Kit](https://github.com/LuYifei2011/tos-app-kit) 提供。浏览器包安装 GitHub Release 的编译产物，Go module 使用固定版本标签；锁文件和 go.sum 随应用提交。应用构建不需要旁边另有公共库检出目录。
+
+升级公共库时同时更新两个浏览器包和 Go module，检查上游发布说明并完成应用回归：
+
+```sh
+npm install --save-exact \
+  https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.1.0/tos-app-core-0.1.0.tgz \
+  https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.1.0/tos-app-ui-kit-0.1.0.tgz
+go get github.com/LuYifei2011/tos-app-kit/go@v0.1.0
+```
+
+库自己的单元测试和构建在上游 CI 执行。应用保留集成回归。运行 `scripts/test-kit-ui.cjs` 时，第一地址为使用临时数据目录的本机演示后端，第二地址为 TOS App Kit 的独立示例；详见上游文档。此脚本需要 Playwright，可通过 `PLAYWRIGHT_MODULE` 指向已有安装。
 
 ## 项目文件
 

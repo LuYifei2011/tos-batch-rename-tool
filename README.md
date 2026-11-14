@@ -80,4 +80,6 @@ sh scripts/dev.sh
 
 项目使用 Vue 3、TypeScript 和 Go，以 [MIT 许可证](LICENSE) 发布。第三方组件及许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)，安装包附带对应许可文本。
 
+通用界面及平台接入使用独立的 [TOS App Kit](https://github.com/LuYifei2011/tos-app-kit)，浏览器包和 Go module 均由应用锁定版本。开发接入方式见[开发与发布指南](docs/DEVELOPMENT.md)。
+
 平台契约参考 [TOS 应用开发指南](https://github.com/terramaster-tos/tos-app-pkg-tools)，打包和会话转发经验参考 [le3gold/tos-cadviewer](https://github.com/le3gold/tos-cadviewer)。实现独立编写，使用系统字体和自写图标。本项目与 TerraMaster 无隶属关系。

@@ -9,10 +9,14 @@ import sys
 import tarfile
 import hashlib
 import gzip
+import subprocess
+import os
 
 ROOT = Path(__file__).resolve().parent.parent
 source_config = json.loads((ROOT / "packaging/config.ini").read_text())
 source_package = json.loads((ROOT / "package.json").read_text())
+core_module = json.loads(subprocess.check_output(["go", "list", "-m", "-json", "github.com/LuYifei2011/tos-app-kit/go"], cwd=ROOT, env=dict(os.environ, GOTOOLCHAIN="local"), text=True))
+core_license = (Path(core_module["Dir"]) / "LICENSE").read_bytes()
 if len(sys.argv) < 2:
     sys.exit("Usage: verify-package.py <package.deb> [package.deb ...]")
 for arg in sys.argv[1:]:
@@ -105,6 +109,9 @@ for arg in sys.argv[1:]:
             assert any("preview.worker-" in name for name in web.getnames())
         for name in ["licenses/vue.txt","licenses/go.txt","licenses/x-sys.txt"]:
             assert get(name)
+        assert get("licenses/tos-app-core-go.txt") == core_license, "Shared Go module license differs from installed dependency"
+        for name in ["tos-app-core", "tos-app-ui-kit"]:
+            assert get("licenses/" + name + ".txt") == (ROOT / "node_modules" / name / "LICENSE").read_bytes(), "Browser library license differs from installed dependency"
         for name in ["COMPATIBILITY.md", "DEVELOPMENT.md", "RELEASE_NOTES.md", "DESIGN.md"]:
             assert get("docs/" + name) == (ROOT / "docs" / name).read_bytes(), f"Packaged {name} differs from source"
     print(f"PASS {p.name}: metadata, {arch} static ELF, socket 0660, current frontend and MIT license")

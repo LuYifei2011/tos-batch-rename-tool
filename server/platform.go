@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -17,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	tosapp "github.com/LuYifei2011/tos-app-kit/go"
 )
 
 type platformError struct {
@@ -29,10 +30,10 @@ func (e *platformError) Error() string { return e.text }
 
 // Credentials live only in an in-flight request or running job, never in plans or journals.
 type platformSession struct {
-	client       *http.Client
-	cookie, csrf string
-	base         string
-	ctx          context.Context
+	client      *http.Client
+	credentials tosapp.Credentials
+	base        string
+	ctx         context.Context
 }
 
 func (s *platformSession) context() context.Context {
@@ -40,14 +41,6 @@ func (s *platformSession) context() context.Context {
 		return s.ctx
 	}
 	return context.Background()
-}
-
-func platformClient() *http.Client {
-	return &http.Client{
-		Transport:     &http.Transport{Proxy: nil, DialContext: (&net.Dialer{Timeout: 5 * time.Second}).DialContext, MaxIdleConnsPerHost: 8, ResponseHeaderTimeout: 20 * time.Second, IdleConnTimeout: 30 * time.Second},
-		Timeout:       30 * time.Second,
-		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
-	}
 }
 
 func (s *platformSession) call(ctx context.Context, method, endpoint string, body any, out any) error {
@@ -65,8 +58,9 @@ func (s *platformSession) call(ctx context.Context, method, endpoint string, bod
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Cookie", s.cookie)
-	req.Header.Set("X-Csrf-Token", s.csrf)
+	if err := s.credentials.Apply(req.Header); err != nil {
+		return err
+	}
 	res, err := s.client.Do(req)
 	if err != nil {
 		return &platformError{503, "TOS 文件服务暂时不可用", method != "GET"}

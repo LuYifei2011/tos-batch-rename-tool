@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	tosapp "github.com/LuYifei2011/tos-app-kit/go"
 )
 
 type fakePlatform struct {
@@ -24,12 +26,24 @@ type fakePlatform struct {
 	expireAfterRename             bool
 }
 
+func testCredentials(t *testing.T, session string) tosapp.Credentials {
+	t.Helper()
+	r := httptest.NewRequest("GET", "http://nas/api/info", nil)
+	r.Header.Set("Cookie", "TMSESSNAME="+session+"; X-Csrf-Token=csrf")
+	r.Header.Set("X-Csrf-Token", "csrf")
+	credentials, err := tosapp.ReadCredentials(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return credentials
+}
+
 func newFakePlatform(t *testing.T) (*fakePlatform, *platformSession) {
 	t.Helper()
 	f := &fakePlatform{files: map[string]platformEntry{}, pageSize: 1000}
 	u := httptest.NewServer(f)
 	t.Cleanup(u.Close)
-	s := &platformSession{client: platformClient(), base: u.URL, cookie: "TMSESSNAME=alice; X-Csrf-Token=csrf", csrf: "csrf"}
+	s := &platformSession{client: tosapp.NewPlatformClient(), base: u.URL, credentials: testCredentials(t, "alice")}
 	t.Cleanup(s.client.CloseIdleConnections)
 	return f, s
 }
@@ -269,35 +283,28 @@ func TestTOSPaginationAndPathBoundaries(t *testing.T) {
 	}
 }
 
-func TestTOSRejectRedirectAndForeignOrigin(t *testing.T) {
+func TestTOSRejectRedirect(t *testing.T) {
 	visits := 0
 	external := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { visits++ }))
 	defer external.Close()
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, external.URL, 302) }))
 	defer upstream.Close()
-	p := &platformSession{client: platformClient(), base: upstream.URL, cookie: "TMSESSNAME=secret", csrf: "secret"}
+	p := &platformSession{client: tosapp.NewPlatformClient(), base: upstream.URL, credentials: testCredentials(t, "secret")}
+	defer p.client.CloseIdleConnections()
 	if _, err := p.roots(t.Context()); err == nil || visits != 0 {
 		t.Fatal("credentials followed a redirect")
-	}
-	for _, o := range []string{"http://evil:8181", "http://nas:9999", "null", "http://nas:8181/path", "http://x@nas:8181"} {
-		r := httptest.NewRequest("POST", "http://nas:8181/api/execute", nil)
-		r.Header.Set("Origin", o)
-		if sameOrigin(r) {
-			t.Fatalf("accepted %q", o)
-		}
-	}
-	r := httptest.NewRequest("POST", "http://nas/api/execute", nil)
-	r.Header.Set("Origin", "http://nas:8181")
-	if !sameOrigin(r) {
-		t.Fatal("TOS nginx host without port rejected")
-	}
-	r.Header.Set("Sec-Fetch-Site", "cross-site")
-	if sameOrigin(r) {
-		t.Fatal("cross-site request accepted")
 	}
 }
 
 func TestTOSHTTPS5443Origin(t *testing.T) {
+	s, _ := setup(t)
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		send(w, 200, map[string]any{"code": true, "is_login": true, "data": []any{}})
+	}))
+	defer upstream.Close()
+	client := tosapp.NewPlatformClient()
+	defer client.CloseIdleConnections()
+	a := &App{store: s, mode: "tos", platform: client, platformBase: upstream.URL}
 	for _, tc := range []struct {
 		name, host, origin, site string
 		want                     bool
@@ -312,12 +319,20 @@ func TestTOSHTTPS5443Origin(t *testing.T) {
 		{"cross-site", "nas", "https://nas:5443", "cross-site", false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			r := httptest.NewRequest("POST", "http://nas/api/plans", nil)
+			r := httptest.NewRequest("GET", "http://nas/api/info", nil)
 			r.Host = tc.host
 			r.Header.Set("Origin", tc.origin)
 			r.Header.Set("Sec-Fetch-Site", tc.site)
-			if got := sameOrigin(r); got != tc.want {
-				t.Fatalf("sameOrigin = %v, want %v", got, tc.want)
+			r.Header.Set("Cookie", "TMSESSNAME=alice; X-Csrf-Token=csrf")
+			r.Header.Set("X-Csrf-Token", "csrf")
+			w := httptest.NewRecorder()
+			a.ServeHTTP(w, r)
+			want := http.StatusForbidden
+			if tc.want {
+				want = http.StatusOK
+			}
+			if w.Code != want {
+				t.Fatalf("status = %v, want %v: %s", w.Code, want, w.Body)
 			}
 		})
 	}

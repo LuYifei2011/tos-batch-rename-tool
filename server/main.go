@@ -2,14 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
-	"crypto/subtle"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -21,6 +17,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	tosapp "github.com/LuYifei2011/tos-app-kit/go"
 )
 
 type App struct {
@@ -34,10 +32,7 @@ type App struct {
 var appVersion = "dev"
 
 func send(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
+	tosapp.WriteJSON(w, status, v)
 }
 func fail(w http.ResponseWriter, status int, err error) {
 	var pe *platformError
@@ -49,35 +44,13 @@ func fail(w http.ResponseWriter, status int, err error) {
 func rejectOrigin(w http.ResponseWriter) {
 	send(w, http.StatusForbidden, map[string]string{"code": "ORIGIN_MISMATCH", "error": "连接来源校验失败（ORIGIN_MISMATCH），请从 TOS 或 TNAS Mobile 重新打开应用。"})
 }
-func sameOrigin(r *http.Request) bool {
-	if site := r.Header.Get("Sec-Fetch-Site"); site == "cross-site" {
-		return false
-	}
-	o := r.Header.Get("Origin")
-	if o == "" {
-		return true
-	}
-	u, err := url.Parse(o)
-	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
-		return false
-	}
-	if strings.EqualFold(u.Host, r.Host) {
-		return true
-	}
-	// TOS nginx uses $host in some builds, which omits the public port.
-	proxyHost := &url.URL{Host: r.Host}
-	platformPort := u.Port() == "8181" || u.Port() == "8443" || (u.Scheme == "https" && u.Port() == "5443")
-	return proxyHost.Port() == "" && strings.EqualFold(u.Hostname(), proxyHost.Hostname()) && platformPort
-}
 func decode(w http.ResponseWriter, r *http.Request, v any) error {
-	r.Body = http.MaxBytesReader(w, r.Body, 48<<20)
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(v); err != nil {
-		return errors.New("请求体无效或超过大小限制")
-	}
-	if d.Decode(new(any)) != io.EOF {
+	err := tosapp.DecodeJSON(w, r, v, 48<<20)
+	if errors.Is(err, tosapp.ErrTrailingJSON) {
 		return errors.New("请求包含多余内容")
+	}
+	if err != nil {
+		return errors.New("请求体无效或超过大小限制")
 	}
 	return nil
 }
@@ -85,9 +58,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Batch-Rename-Version", appVersion)
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Referrer-Policy", "same-origin")
-	p := r.URL.Path
-	p = strings.TrimPrefix(p, "/v2/proxy/batch-rename")
-	p = strings.TrimPrefix(p, "/batch-rename")
+	p := tosapp.StripAppPrefix(r.URL.Path, "batch-rename")
 	if !strings.HasPrefix(p, "/api/") {
 		if r.Method != "GET" && r.Method != "HEAD" {
 			w.WriteHeader(405)
@@ -101,45 +72,41 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	open := a.store.openNative
 	roots := a.roots
 	if r.Method == "OPTIONS" {
-		if a.mode != "tos" || r.Header.Get("Origin") == "" || !sameOrigin(r) {
+		if a.mode != "tos" {
 			rejectOrigin(w)
 			return
 		}
-		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-Csrf-Token, Cookie")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Vary", "Origin")
-		w.WriteHeader(204)
+		if err := tosapp.WritePreflight(w, r, []string{"GET", "POST", "OPTIONS"}); err != nil {
+			rejectOrigin(w)
+		}
 		return
 	}
 	if a.mode == "tos" {
-		session, err := r.Cookie("TMSESSNAME")
-		csrf, e2 := r.Cookie("X-Csrf-Token")
-		token := r.Header.Get("X-Csrf-Token")
-		if err != nil || e2 != nil || session.Value == "" || token == "" || subtle.ConstantTimeCompare([]byte(token), []byte(csrf.Value)) != 1 {
-			send(w, 401, map[string]string{"code": "AUTH_HEADERS_INVALID", "error": "TOS 会话或 CSRF 校验失败"})
-			return
-		}
-		hash := sha256.Sum256([]byte(session.Value))
-		owner = hex.EncodeToString(hash[:])
-		if !sameOrigin(r) {
-			rejectOrigin(w)
-			return
-		}
 		base := a.platformBase
 		if base == "" {
 			base = "http://127.0.0.1:8181"
 		}
 		ctx, cancel := context.WithTimeout(r.Context(), 55*time.Second)
 		defer cancel()
-		ps := &platformSession{client: a.platform, base: base, cookie: session.String() + "; " + csrf.String(), csrf: token, ctx: ctx}
-		var e error
-		roots, e = ps.roots(ctx)
-		if e != nil {
-			fail(w, 503, e)
+		var ps *platformSession
+		credentials, err := tosapp.Authenticate(r.WithContext(ctx), func(ctx context.Context, credentials tosapp.Credentials) error {
+			ps = &platformSession{client: a.platform, base: base, credentials: credentials, ctx: ctx}
+			var err error
+			roots, err = ps.roots(ctx)
+			return err
+		})
+		if err != nil {
+			switch {
+			case errors.Is(err, tosapp.ErrInvalidCredentials):
+				send(w, 401, map[string]string{"code": "AUTH_HEADERS_INVALID", "error": "TOS 会话或 CSRF 校验失败"})
+			case errors.Is(err, tosapp.ErrOriginMismatch):
+				rejectOrigin(w)
+			default:
+				fail(w, 503, err)
+			}
 			return
 		}
+		owner = credentials.SessionHash()
 		open = ps.open
 	} else {
 		if o := r.Header.Get("Origin"); o != "" {
@@ -312,7 +279,7 @@ func main() {
 	workers := flag.Int("workers", 4, "concurrent rename operations (1-8)")
 	flag.Parse()
 	if *prepare {
-		if err := prepareTOSData(); err != nil {
+		if err := tosapp.PrepareAppData("batch-rename"); err != nil {
 			log.Fatalf("[ERROR] [initialize] %v", err)
 		}
 		return
@@ -323,15 +290,17 @@ func main() {
 	if *workers < 1 || *workers > 8 {
 		log.Fatal("workers must be 1-8")
 	}
-	if *mode == "tos" && os.Geteuid() == 0 {
-		log.Fatal("TOS requires a non-root service user")
+	if *mode == "tos" {
+		if err := tosapp.RequireNonRoot(); err != nil {
+			log.Fatal(err)
+		}
 	}
 	absData, err := filepath.Abs(*data)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if *mode == "tos" {
-		if err := checkTOSData(absData); err != nil {
+		if err := tosapp.CheckDataDirectory(absData); err != nil {
 			log.Fatalf("[ERROR] [startup] %v", err)
 		}
 	}
@@ -366,43 +335,29 @@ func main() {
 	if err != nil {
 		log.Fatalf("[ERROR] [history] cannot open execution records; preserve data/history and inspect its permissions and JSON files: %v", err)
 	}
-	app := &App{store: store, roots: roots, mode: *mode, web: *web, platform: platformClient()}
+	platform := tosapp.NewPlatformClient()
+	defer platform.CloseIdleConnections()
+	app := &App{store: store, roots: roots, mode: *mode, web: *web, platform: platform}
 	var ln net.Listener
 	if *mode == "tos" {
-		if os.Getenv("LISTEN_FDS") != "1" || os.Getenv("LISTEN_PID") != fmt.Sprint(os.Getpid()) {
-			log.Fatal("TOS mode requires systemd socket activation")
-		}
-		f := os.NewFile(3, "systemd-socket")
-		ln, err = net.FileListener(f)
-		f.Close()
+		ln, err = tosapp.SystemdListener()
 	} else {
-		host, _, e := net.SplitHostPort(*listen)
-		if e != nil || host != "127.0.0.1" {
-			log.Fatal("demo binds to 127.0.0.1 only")
-		}
-		ln, err = net.Listen("tcp", *listen)
+		ln, err = tosapp.ListenLoopback(*listen)
 	}
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv := &http.Server{Handler: app, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 60 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
-	go func() {
-		ch := make(chan os.Signal, 1)
-		signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT)
-		<-ch
+	srv := tosapp.NewHTTPServer(app)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+	log.Printf("[INFO] [startup] batch-rename %s ready (%s), %d authorized roots, %d workers", appVersion, *mode, len(roots), *workers)
+	serveErr := tosapp.Serve(ctx, srv, ln, tosapp.ServeOptions{BeforeShutdown: func() {
 		store.mu.Lock()
 		for _, j := range store.jobs {
 			j.stop = true
 		}
 		store.mu.Unlock()
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		srv.Shutdown(ctx)
-	}()
-	log.Printf("[INFO] [startup] batch-rename %s ready (%s), %d authorized roots, %d workers", appVersion, *mode, len(roots), *workers)
-	if e := srv.Serve(ln); e != nil && e != http.ErrServerClosed {
-		log.Fatal(e)
-	}
+	}})
 	for {
 		store.mu.Lock()
 		active := store.active
@@ -411,5 +366,8 @@ func main() {
 			break
 		}
 		time.Sleep(20 * time.Millisecond)
+	}
+	if serveErr != nil {
+		log.Fatal(serveErr)
 	}
 }
