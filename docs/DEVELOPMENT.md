@@ -72,7 +72,7 @@ git push origin v0.1.0
 
 ## 公共库依赖
 
-当前应用接入 App Kit `0.2.0` 的两区 `TosAppShell`。浏览器包通过固定版本 Release URL 安装，npm 锁文件固定完整性；Go module 使用 v0.2.0。`npm ci` 无需旁边存在 App Kit 源码。
+当前应用接入 App Kit `0.3.1` 的两区 `TosAppShell`。浏览器包通过固定版本 Release URL 安装，npm 锁文件固定完整性；Go module 使用 v0.3.1。`npm ci` 无需旁边存在 App Kit 源码。
 
 通用操作图标静态导入 `@lucide/vue`，原应用品牌图标保留。图标许可证随安装包收录。分栏、规则、文件预览和对话框仍由应用负责。
 
@@ -82,9 +82,9 @@ git push origin v0.1.0
 
 ```sh
 npm install --save-exact \
-  https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.2.0/tos-app-core-0.2.0.tgz \
-  https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.2.0/tos-app-ui-kit-0.2.0.tgz
-go get github.com/LuYifei2011/tos-app-kit/go@v0.2.0
+  https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.3.1/tos-app-core-0.3.1.tgz \
+  https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.3.1/tos-app-ui-kit-0.3.1.tgz
+go get github.com/LuYifei2011/tos-app-kit/go@v0.3.1
 ```
 
 库自己的单元测试和构建在上游 CI 执行。应用保留逻辑与接口集成回归。界面由人工审核：使用本机演示模式检查目录选择、规则预览、重命名与撤销、主题语言及偏好保留、连接诊断、键盘操作和窄屏布局，再按[兼容性说明](COMPATIBILITY.md)完成目标设备验收。

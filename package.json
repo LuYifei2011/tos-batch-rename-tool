@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@lucide/vue": "1.72.0",
-    "tos-app-core": "https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.2.0/tos-app-core-0.2.0.tgz",
-    "tos-app-ui-kit": "https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.2.0/tos-app-ui-kit-0.2.0.tgz",
+    "tos-app-core": "https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.3.1/tos-app-core-0.3.1.tgz",
+    "tos-app-ui-kit": "https://github.com/LuYifei2011/tos-app-kit/releases/download/v0.3.1/tos-app-ui-kit-0.3.1.tgz",
     "vue": "^3.5.24"
   },
   "devDependencies": {
