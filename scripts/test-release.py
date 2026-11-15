@@ -48,12 +48,21 @@ class ReleaseMetadataTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Tag must"):
             metadata.validate(self.root, "v99.0.0")
 
-    def test_minimum_tos_version_uses_numeric_format(self):
-        for version in ("TOS7.0", "6.9", True, "7"):
+    def test_minimum_tos_version_uses_platform_format(self):
+        for version in ("TOS7.0", "TOS7.0.1", "TOS7.1", "TOS8.0"):
+            with self.subTest(version=version):
+                self.update_json("packaging/config.ini", lambda data: data.update(low_version=version))
+                self.assertEqual(metadata.validate(self.root)["low_version"], version)
+        for version in ("7.0", "TOS6.9", True, "7", "TOS7", "", None):
             with self.subTest(version=version):
                 self.update_json("packaging/config.ini", lambda data: data.update(low_version=version))
                 with self.assertRaisesRegex(ValueError, "low_version"):
                     metadata.validate(self.root)
+
+    def test_missing_minimum_tos_version_is_rejected(self):
+        self.update_json("packaging/config.ini", lambda data: data.pop("low_version"))
+        with self.assertRaisesRegex(ValueError, "low_version"):
+            metadata.validate(self.root)
 
     def test_publisher_drift_is_rejected(self):
         self.update_json("packaging/config.ini", lambda data: data.update(publisher="Someone Else"))

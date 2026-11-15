@@ -21,15 +21,14 @@ def validate(root, tag=None):
         raise ValueError("Package, lockfile and TOS versions differ")
     if tag is not None and tag != "v" + version:
         raise ValueError(f"Tag must be v{version}")
-    for key in ("id", "icon", "publisher", "exec", "version", "help", "category", "platform", "application_type", "user"):
+    for key in ("id", "icon", "publisher", "exec", "version", "low_version", "help", "category", "platform", "application_type", "user"):
         if key not in config or config[key] in (None, "", []):
             raise ValueError(f"Missing required config.ini field: {key}")
     if type(config.get("beta")) is not bool or type(config["exec"]) is not bool:
         raise ValueError("beta and exec must be booleans")
-    if config.get("low_version") not in (None, ""):
-        minimum = config["low_version"]
-        if not isinstance(minimum, str) or not re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?", minimum) or tuple(map(int, minimum.split("."))) < (7, 0):
-            raise ValueError("low_version must be a numeric TOS version >= 7.0")
+    minimum = config["low_version"]
+    if not isinstance(minimum, str) or not re.fullmatch(r"TOS[0-9]+\.[0-9]+(?:\.[0-9]+)?", minimum) or tuple(map(int, minimum[3:].split("."))) < (7, 0):
+        raise ValueError("low_version must use the TOS7.0 format and require TOS >= 7.0")
     if package["license"] != "MIT" or lock["packages"][""].get("license") != "MIT":
         raise ValueError("Package and lockfile licenses must be MIT")
     author = package["author"]

@@ -62,7 +62,7 @@ for arg in sys.argv[1:]:
         for name in ["README.md", "THIRD_PARTY_NOTICES.md", "LICENSE"]:
             assert get(name) == (ROOT / name).read_bytes(), f"Packaged {name} differs from source"
         assert config["version"]==version
-        assert config["low_version"] == "7.0"
+        assert config["low_version"] == "TOS7.0"
         assert config["id"]=="batch-rename"
         assert config["type"]=="iframe" and "open_path" not in config
         assert config["path"]=="/batch-rename/"
