@@ -60,6 +60,10 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Referrer-Policy", "same-origin")
 	p := tosapp.StripAppPrefix(r.URL.Path, "batch-rename")
 	if !strings.HasPrefix(p, "/api/") {
+		if a.mode != "demo" {
+			http.NotFound(w, r)
+			return
+		}
 		if r.Method != "GET" && r.Method != "HEAD" {
 			w.WriteHeader(405)
 			return
@@ -274,7 +278,7 @@ func main() {
 	prepare := flag.Bool("prepare-data", false, "prepare the fixed TOS data directory and exit")
 	mode := flag.String("mode", "demo", "demo or tos")
 	data := flag.String("data", ".local/data", "runtime data directory")
-	web := flag.String("web", "dist", "frontend directory")
+	web := flag.String("web", "dist", "local demo frontend directory")
 	listen := flag.String("listen", "127.0.0.1:18946", "local demo listener")
 	workers := flag.Int("workers", 4, "concurrent rename operations (1-8)")
 	flag.Parse()

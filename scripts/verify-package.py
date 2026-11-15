@@ -86,6 +86,8 @@ for arg in sys.argv[1:]:
         assert b"ListenStream=/var/api/batch-rename.sock" in get("init.d/batch-rename.socket")
         assert b"User=batch-rename" in get("init.d/batch-rename.service")
         service=get("init.d/batch-rename.service").decode()
+        start_args = next(line for line in service.splitlines() if line.startswith("ExecStart=")).split()[1:]
+        assert not any(arg.startswith("-") and arg.lstrip("-").split("=", 1)[0] == "web" for arg in start_args), "production unit includes demo static directory"
         assert "EnvironmentFile=" not in service and "-roots" not in service and "-origin" not in service
         assert "Group=batch-rename" in service and "GOMEMLIMIT=192MiB" in service
         assert base + "init.d/batch-rename-setup.service" not in names

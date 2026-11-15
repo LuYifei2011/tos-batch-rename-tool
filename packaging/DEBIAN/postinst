@@ -3,7 +3,7 @@ set -eu
 app=/usr/local/batch-rename
 case "${1:-}" in
 configure)
-    for name in data site site.next site.previous webui webui.next webui.previous; do
+    for name in data webui webui.next webui.previous; do
         if [ -L "$app/$name" ] || { [ -e "$app/$name" ] && [ ! -d "$app/$name" ]; }; then
             echo "batch-rename: $app/$name must be a real directory" >&2
             exit 1
@@ -47,25 +47,23 @@ configure)
             rm -f -- "$fragment"
         fi
     done
-    # Refresh both the backend fallback and TOS static entry on upgrade.
-    for name in site webui; do
-        if [ -d "$app/$name.previous" ] && [ ! -d "$app/$name" ]; then mv "$app/$name.previous" "$app/$name"; fi
-        rm -rf -- "$app/$name.next" "$app/$name.previous"
-        install -d -m 0755 "$app/$name.next"
-        trap 'rm -rf -- "$app/$name.next"' 0
-        tar -xjf "$app/webui.bz2" -C "$app/$name.next"
-        if [ ! -f "$app/$name.next/index.html" ]; then
-            echo "batch-rename: frontend archive has no index.html" >&2
-            exit 1
-        fi
-        if [ -d "$app/$name" ]; then mv "$app/$name" "$app/$name.previous"; fi
-        if ! mv "$app/$name.next" "$app/$name"; then
-            if [ -d "$app/$name.previous" ]; then mv "$app/$name.previous" "$app/$name"; fi
-            exit 1
-        fi
-        rm -rf -- "$app/$name.previous"
-        trap - 0
-    done
+    # Publish the static directory served by TOS.
+    if [ -d "$app/webui.previous" ] && [ ! -d "$app/webui" ]; then mv "$app/webui.previous" "$app/webui"; fi
+    rm -rf -- "$app/webui.next" "$app/webui.previous"
+    install -d -m 0755 "$app/webui.next"
+    trap 'rm -rf -- "$app/webui.next"' 0
+    tar -xjf "$app/webui.bz2" -C "$app/webui.next"
+    if [ ! -f "$app/webui.next/index.html" ]; then
+        echo "batch-rename: frontend archive has no index.html" >&2
+        exit 1
+    fi
+    if [ -d "$app/webui" ]; then mv "$app/webui" "$app/webui.previous"; fi
+    if ! mv "$app/webui.next" "$app/webui"; then
+        if [ -d "$app/webui.previous" ]; then mv "$app/webui.previous" "$app/webui"; fi
+        exit 1
+    fi
+    rm -rf -- "$app/webui.previous"
+    trap - 0
     systemctl daemon-reload
     systemctl enable "$app/init.d/batch-rename.service" "$app/init.d/batch-rename.socket"
     if id batch-rename >/dev/null 2>&1; then

@@ -3,7 +3,7 @@ set -eu
 case "${1:-}" in
 remove|purge)
     app=/usr/local/batch-rename
-    for name in site site.next site.previous webui webui.next webui.previous; do
+    for name in webui webui.next webui.previous; do
         if [ -L "$app/$name" ]; then
             rm -f -- "$app/$name"
         elif [ -d "$app/$name" ]; then

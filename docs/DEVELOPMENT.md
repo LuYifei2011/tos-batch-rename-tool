@@ -42,6 +42,12 @@ python3 scripts/check-security.py build/batch-rename_0.1.1_amd64.deb build/batch
 
 在 Linux 中还需使用[官方自测工具](https://github.com/terramaster-tos/tos-app-pkg-tools/releases/tag/v1.0.3-beta)分别检查两个 deb。GitHub Actions 固定工具版本和 SHA-256，在上传产物前执行此检查。
 
+## 静态文件与安装
+
+安装和升级将 `webui.bz2` 展开到 `webui.next`，验证首页后切换为 `webui`，清理旧资源。TOS 的 HTTP 服务从 `/usr/local/<id>/webui` 提供生产页面，应用后端只处理 API。`--web` 仅用于本地开发/演示，开发脚本指向 dist；生产 service 不传该参数。该目录及其 `.next` / `.previous` 必须是真实目录；展开或首页验证失败时保留现有页面，切换失败时恢复旧目录。断电和整包升级回滚仍需独立验收。
+
+安装脚本只替换生成的静态文件；remove 和 purge 保留 data 中的执行记录及用户文件。应用中心选择删除配置时的平台清理行为，仍需按兼容性清单验收。
+
 ## 自动化
 
 `.github/workflows/release.yml` 在 `main` 推送、拉取请求和手动运行时执行验证，并上传双架构构建产物；推送 `v*` 标签时，在所有检查成功后创建 GitHub Release。
