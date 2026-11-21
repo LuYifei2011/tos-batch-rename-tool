@@ -13,6 +13,7 @@ export const english: Record<string, string> = {
   '规则与操作': 'Rules and actions',
   '包含文件夹': 'Include folders',
   '使用说明': 'Help',
+  '隐私政策': 'Privacy policy',
   '规则按顺序应用，保留扩展名。': 'Rules run in order. Extensions are preserved.',
   '单批最多选择 50,000 项。': 'Select up to 50,000 items per batch.',
   '{count} 项名称需要处理': '{count} names need attention',

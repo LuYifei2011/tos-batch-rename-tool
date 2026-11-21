@@ -2,180 +2,180 @@
 name = "批量重命名"
 auth = "Lu Yifei"
 descript = "预览并批量修改文件名，支持多规则组合、冲突检查、执行记录和撤销。"
-release_note = "0.1.1 Beta：更新应用界面与图标，修复应用组缺失时的安装问题，规范安装升级与服务启停。"
+release_note = "0.1.2 Beta 新增离线隐私政策和后端来源说明，升级时更新页面并清理旧版页面资源。"
 important = ""
 
 [zh-hk]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [en-us]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [ko-kr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [ja-jp]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [de-de]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [fr-fr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [it-it]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [es-es]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [hu-hu]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [pl-pl]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [tr-tr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [ru-ru]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [pt-pt]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [cs-cz]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [da-dk]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [nl-nl]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [nb-no]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [sv-se]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [el-gr]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [ro-ro]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [th-th]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [vi-vn]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [id-id]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [ar-sa]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""
 
 [he-il]
 name = "Batch Rename"
 auth = "Lu Yifei"
 descript = "Preview and rename files with ordered rules, conflict checks, execution records and undo."
-release_note = "0.1.1 Beta: updated interface and icons, fixed installation when the application group is missing, and improved installation, upgrade and service lifecycle handling."
+release_note = "0.1.2 Beta adds an offline privacy policy and backend source information. Upgrades refresh the frontend and remove obsolete page assets."
 important = ""

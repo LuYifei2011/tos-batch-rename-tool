@@ -72,5 +72,11 @@ configure)
     else
         echo "batch-rename: waiting for TOS to create its application account; enable the app after account creation" >&2
     fi
+    # Previous releases unpacked the frontend under site/ and its swap directories.
+    for name in site site.next site.previous; do
+        if [ -L "$app/$name" ] || [ -d "$app/$name" ]; then
+            rm -rf -- "$app/$name"
+        fi
+    done
     ;;
 esac

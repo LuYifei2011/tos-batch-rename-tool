@@ -1,0 +1,30 @@
+批量重命名工具隐私政策
+2026-11-21
+
+数据及用途
+选择目录时，应用通过当前登录用户的 TOS 会话读取文件名、路径及类型、大小、修改时间、所有者等属性，用于预览、冲突检查和执行改名。规则和待执行计划在内存中处理。改名无需读取文件内容。
+
+保存位置与期限
+NAS 在 /usr/local/batch-rename/data/history/ 保存任务时间、目录、原名与新名、文件属性标识、执行结果、错误和会话哈希，以支持核对和撤销。历史按批次轮转，最多 32 批，没有按天到期的期限。新任务优先淘汰最早可清理的已结束记录，状态不确定的记录保留待核对。包的升级和普通卸载脚本保留历史。
+语言与主题偏好保存在当前浏览器的 batch-rename.preferences 项，直至更改或清除。连接诊断保存在当前页面内存，关闭页面后清除。
+
+访问、安全与共享
+TOS 校验当前用户的文件访问权限。应用把会话 Cookie 和 CSRF 凭据在内存中转交本机 TOS 文件服务，任务历史仅保存会话哈希。业务服务以专用账号运行，历史目录和文件分别使用 0700 和 0600 权限。该应用没有遥测，不向开发者或第三方发送文件信息、任务历史或凭据。NAS 管理员可在设备上管理记录。
+
+查阅、更正和删除
+当前会话可在应用中查看最近任务的执行结果，在符合撤销条件时恢复原名。需要查阅其他历史、更正错误记录或删除本人数据时，请通过平时申请 NAS 账号的私有渠道联系该设备管理员，提供大致执行时间和所需处理的批次。重新登录会产生新会话，此时也可使用该渠道。开发者无法远程访问 NAS 上的记录。
+管理员核实请求人和任务归属后，可提供相应记录副本。发生错误改名时，可协助恢复或重新命名。历史反映实际执行过程，如内容有误，可为请求人说明更正情况，或应请求删除该批历史。删除前先确认任务已结束或已核对中断状态，停用应用，在上述 history 目录中仅删除该任务 ID 对应的 .json、.jsonl 和存在的 .json.part，再启用应用。删除历史会移除该批的应用内撤销依据，已改名的文件仍保留当前名称。
+浏览器偏好可在应用的“语言与主题”中更改，或在浏览器的站点存储中删除 batch-rename.preferences。
+
+Batch Rename privacy policy
+21 November 2026
+
+The app uses your signed-in TOS account to list names, paths and file attributes such as type, size, modification time and owner. It uses these to preview changes, check conflicts and rename files. Rules and pending plans are processed in memory. Renaming does not require reading file contents.
+
+Your NAS stores task times, directories, old and new names, file attribute identifiers, results, errors and a session hash under /usr/local/batch-rename/data/history/ for review and undo. There is no time-based expiry. Up to 32 batches are retained. A new task replaces the oldest eligible completed batch when space is needed. Uncertain records remain available for review. The package scripts retain history during upgrades and ordinary removal. Language and theme preferences remain in the browser under batch-rename.preferences until changed or cleared. Connection diagnostics are discarded when the page closes.
+
+TOS checks file permissions. Session cookies and CSRF credentials are passed in memory to the local TOS file service. Only a session hash is stored as the session identifier in task history. A dedicated account runs the service. History directories use mode 0700 and files use 0600. The app has no telemetry and does not send file information, history or credentials to the developer or to third parties. Your NAS administrator can manage records on the device.
+
+Use the app to inspect the most recent task in your current session or undo eligible renames. For a copy, correction or deletion of other records, contact the administrator who provides your NAS account through your usual private support channel. Provide the approximate time and the batch concerned. Use this channel after signing in again, since a new session cannot view earlier sessions' records. The developer cannot access your NAS history remotely.
+
+After verifying the requester and the batch, the administrator can provide a copy, help correct a file name, explain a correction to the historical record or delete the batch on request. To delete a batch, first finish the job or reconcile its interrupted state. Disable the app, remove only that ID's .json, .jsonl and any .json.part in history, then enable the app again. This removes the app's undo information for that batch and leaves files with their current names. Change browser preferences in Language and theme, or delete batch-rename.preferences from the browser's site storage.

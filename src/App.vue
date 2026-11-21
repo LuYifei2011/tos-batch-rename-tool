@@ -318,6 +318,7 @@ onUnmounted(() => {
         <header class="dialog-heading"><h2 id="dialog-title">{{ t('使用说明') }}</h2><button class="icon-button" :aria-label="t('关闭说明')" @click="dialog?.close()"><Icon name="close" :size="18" /></button></header>
         <ol><li>{{ t('在右侧打开共享文件夹，再进入要处理的目录。') }}</li><li>{{ t('勾选文件，在左侧编辑或添加规则。') }}</li><li>{{ t('检查右侧新名称，确认后重命名。') }}</li></ol>
         <p>{{ t('规则按排列顺序应用。序号按所选文件的名称排序生成；筛选只改变显示范围。') }}</p><p class="dialog-note">{{ t('正则替换支持 $1、$2 捕获组。扩展名保留，符号链接跳过，大小写改名与已有目标会提示冲突。') }}</p><p v-if="mode === 'demo'" class="dialog-note">{{ t('当前操作对象为隔离目录中的测试文件。') }}</p>
+        <p><a href="./privacy.txt" target="_blank" rel="noopener noreferrer">{{ t('隐私政策') }}</a></p>
         <p class="dialog-note">{{ t('前端 {client} · 后端 {server}', { client: APP_VERSION, server: backendVersion || t('未返回版本') }) }}</p>
       </template>
       <template v-else-if="dialogKind === 'settings'">

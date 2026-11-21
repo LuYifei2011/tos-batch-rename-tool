@@ -26,19 +26,7 @@ with tempfile.TemporaryDirectory(prefix="batch-rename-security-") as tmp:
         subprocess.run([str(scanner), "./server"], cwd=ROOT,
                        env=dict(env, GOOS="linux", GOARCH=arch, CGO_ENABLED="0"), check=True)
     for index, package in enumerate(args.packages):
-        data = package.read_bytes()
-        if data[:8] != b"!<arch>\n":
-            parser.error(f"Not a deb archive: {package}")
-        pos = 8
-        payload = None
-        while pos < len(data):
-            header = data[pos:pos + 60]
-            size = int(header[48:58])
-            if header[:16].decode().strip().rstrip("/") == "data.tar.gz":
-                payload = data[pos + 60:pos + 60 + size]
-            pos += 60 + size + size % 2
-        if payload is None:
-            parser.error(f"Missing data.tar.gz: {package}")
+        payload = subprocess.check_output(["dpkg-deb", "--fsys-tarfile", package])
         with tarfile.open(fileobj=io.BytesIO(payload)) as archive:
             binary = Path(tmp) / f"binary-{index}"
             binary.write_bytes(archive.extractfile("./usr/local/batch-rename/bin/batch-rename").read())

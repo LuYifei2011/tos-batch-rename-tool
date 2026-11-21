@@ -24,8 +24,8 @@ npm run build
 go vet ./server
 python3 scripts/build-package.py amd64
 python3 scripts/build-package.py arm64
-python3 scripts/verify-package.py build/batch-rename_0.1.1_amd64.deb build/batch-rename_0.1.1_arm64.deb
-python3 scripts/check-security.py build/batch-rename_0.1.1_amd64.deb build/batch-rename_0.1.1_arm64.deb
+python3 scripts/verify-package.py build/batch-rename_0.1.2_amd64.deb build/batch-rename_0.1.2_arm64.deb
+python3 scripts/check-security.py build/batch-rename_0.1.2_amd64.deb build/batch-rename_0.1.2_arm64.deb
 ```
 
 `npm test` 依次运行下列测试集，CI 使用同一入口：
@@ -38,7 +38,7 @@ python3 scripts/check-security.py build/batch-rename_0.1.1_amd64.deb build/batch
 
 通用 API 重试、凭据处理、诊断状态和偏好解析、回退、超时由 App Kit 的 `api.test.ts`、`preferences.test.ts` 覆盖。应用侧保留固定版本依赖的集成检查：代理路由与 GET/POST 简写、中文错误映射、会话失效跳转、访问失败锁定、自定义版本头和任务路径脱敏，以及本应用偏好存储与 Vue 状态绑定。业务翻译在 `src/core/i18n.test.ts` 单独维护。
 
-打包脚本先核对 `.go-version`，禁用自动切换 Go 工具链，再校验元数据并重新构建前端，再交叉编译静态 Linux ELF，生成 deb，附带工具链版本、架构和二进制 SHA-256 的 `build-info.json`。安全检查使用 `.govulncheck-version` 固定的官方工具，扫描 npm 锁定依赖、两个 Linux 架构的后端源码及指定包内的实际二进制。可用 `--go /path/to/go` 指定 Go 工具链。打包可在 macOS 运行，安装包结构校验会比对源码元数据、当前前端构建和许可证。
+打包脚本先核对 `.go-version`，禁用自动切换 Go 工具链，再校验元数据并重新构建前端，再交叉编译静态 Linux ELF，生成 deb，附带工具链版本、架构和二进制 SHA-256 的 `build-info.json`。安全检查使用 `.govulncheck-version` 固定的官方工具，扫描 npm 锁定依赖、两个 Linux 架构的后端源码及指定包内的实际二进制。可用 `--go /path/to/go` 指定 Go 工具链。打包和验包需要 `dpkg-deb`。构建采用 `dpkg-deb --root-owner-group -Zxz --build`；安装包结构校验会比对源码元数据、当前前端构建和许可证。
 
 在 Linux 中还需使用[官方自测工具](https://github.com/terramaster-tos/tos-app-pkg-tools/releases/tag/v1.0.3-beta)分别检查两个 deb。GitHub Actions 固定工具版本和 SHA-256，在上传产物前执行此检查。
 
@@ -46,7 +46,7 @@ python3 scripts/check-security.py build/batch-rename_0.1.1_amd64.deb build/batch
 
 安装和升级将 `webui.bz2` 展开到 `webui.next`，验证首页后切换为 `webui`，清理旧资源。TOS 的 HTTP 服务从 `/usr/local/<id>/webui` 提供生产页面，应用后端只处理 API。`--web` 仅用于本地开发/演示，开发脚本指向 dist；生产 service 不传该参数。该目录及其 `.next` / `.previous` 必须是真实目录；展开或首页验证失败时保留现有页面，切换失败时恢复旧目录。断电和整包升级回滚仍需独立验收。
 
-安装脚本只替换生成的静态文件；remove 和 purge 保留 data 中的执行记录及用户文件。应用中心选择删除配置时的平台清理行为，仍需按兼容性清单验收。
+配置成功后清理早期版本生成的 `site/`、`site.next/` 和 `site.previous/`。安装脚本只替换生成的静态文件；remove 和 purge 保留 data 中的执行记录及用户文件。应用中心选择删除配置时的平台清理行为，仍需按兼容性清单验收。
 
 ## 自动化
 
@@ -56,7 +56,7 @@ python3 scripts/check-security.py build/batch-rename_0.1.1_amd64.deb build/batch
 - Ubuntu 构建任务安装 amd64 deb，以真实 systemd 验证账号延后创建、启动前权限初始化、非 root 业务进程、故障恢复、升级及卸载；此检查不能代替 TOS 真机验收。
 - Linux 构建两个架构，执行依赖与二进制漏洞扫描、项目校验和官方包自测，生成 `SHA256SUMS`。
 - 只有标签发布任务具有 `contents: write` 权限，使用仓库内置 `GITHUB_TOKEN`。
-- 标签必须与源码版本一致，例如版本 `0.1.1` 对应 `v0.1.1`。
+- 标签必须与源码版本一致，例如版本 `0.1.2` 对应 `v0.1.2`。
 - `packaging/config.ini` 的 `beta: true` 对应 GitHub 预发布；`false` 对应正式发布。
 - 发布附件包含两个 deb 及校验和；同一标签的已有 Release 不会被覆盖。
 
@@ -70,8 +70,8 @@ python3 scripts/check-security.py build/batch-rename_0.1.1_amd64.deb build/batch
 4. 为待发布提交创建并推送签名标签：
 
 ```sh
-git tag -s v0.1.1 -m "Release v0.1.1"
-git push origin v0.1.1
+git tag -s v0.1.2 -m "Release v0.1.2"
+git push origin v0.1.2
 ```
 
 推送标签即触发自动发布。升级版本时使用对应的新标签；修正已发布版本应递增版本号。

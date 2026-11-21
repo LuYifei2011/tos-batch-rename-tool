@@ -8,7 +8,6 @@ import struct
 import sys
 import tarfile
 import hashlib
-import gzip
 import subprocess
 import os
 
@@ -21,22 +20,7 @@ if len(sys.argv) < 2:
     sys.exit("Usage: verify-package.py <package.deb> [package.deb ...]")
 for arg in sys.argv[1:]:
     p=Path(arg)
-    data=p.read_bytes()
-    assert data[:8]==b"!<arch>\n", "Not a deb/ar archive"
-    members={}
-    pos=8
-    while pos<len(data):
-        header=data[pos:pos+60]
-        assert header[-2:]==b"`\n"
-        name=header[:16].decode().strip().rstrip("/")
-        length=int(header[48:58])
-        members[name]=data[pos+60:pos+60+length]
-        pos+=60+length+(length%2)
-    assert members["debian-binary"]==b"2.0\n"
-    for name in ("control.tar.gz", "data.tar.gz"):
-        # The official TOS checker rejects POSIX USTAR/PAX package archives.
-        assert gzip.decompress(members[name])[257:265] == b"ustar  \x00", f"{name} must use GNU tar format"
-    with tarfile.open(fileobj=io.BytesIO(members["control.tar.gz"])) as control:
+    with tarfile.open(fileobj=io.BytesIO(subprocess.check_output(["dpkg-deb", "--ctrl-tarfile", p]))) as control:
         fields=control.extractfile("./control").read().decode()
         arch=re.search(r"^Architecture: (\S+)$",fields,re.M)[1]
         version=re.search(r"^Version: (\S+)$",fields,re.M)[1]
@@ -49,9 +33,9 @@ for arg in sys.argv[1:]:
             assert text.startswith("#!/bin/bash\n") and "\r" not in text
             assert text == (ROOT / "packaging/DEBIAN" / name).read_text()
             assert "useradd" not in text and "chmod 777" not in text
-    with tarfile.open(fileobj=io.BytesIO(members["data.tar.gz"])) as tar:
+    with tarfile.open(fileobj=io.BytesIO(subprocess.check_output(["dpkg-deb", "--fsys-tarfile", p]))) as tar:
         names=tar.getnames()
-        assert all(n.startswith("./usr") and ".." not in Path(n).parts for n in names)
+        assert all((n == "." or n == "./usr" or n.startswith("./usr/")) and ".." not in Path(n).parts for n in names)
         base="./usr/local/batch-rename/"
         get=lambda n:tar.extractfile(base+n).read()
         config=json.loads(get("config.ini"))
@@ -103,6 +87,7 @@ for arg in sys.argv[1:]:
             packaged_files = {member.name: web.extractfile(member).read() for member in web if member.isfile()}
             built_files = {str(path.relative_to(ROOT / "dist")): path.read_bytes() for path in (ROOT / "dist").rglob("*") if path.is_file()}
             assert built_files and packaged_files == built_files, "Packaged frontend differs from the current build"
+            assert packaged_files["privacy.txt"] == (ROOT / "public/privacy.txt").read_bytes()
             html=web.extractfile("index.html").read().decode()
             assert 'lang="zh-CN"' in html and 'src="./assets/' in html
             assert f'name="batch-rename-version" content="{version}"' in html, "Frontend build version differs from package"
@@ -118,6 +103,6 @@ for arg in sys.argv[1:]:
         assert get("licenses/tos-app-core-go.txt") == core_license, "Shared Go module license differs from installed dependency"
         for name in ["tos-app-core", "tos-app-ui-kit"]:
             assert get("licenses/" + name + ".txt") == (ROOT / "node_modules" / name / "LICENSE").read_bytes(), "Browser library license differs from installed dependency"
-        for name in ["COMPATIBILITY.md", "DEVELOPMENT.md", "RELEASE_NOTES.md", "DESIGN.md"]:
+        for name in ["COMPATIBILITY.md", "DEVELOPMENT.md", "RELEASE_NOTES.md", "DESIGN.md", "BINARY_SOURCE.md"]:
             assert get("docs/" + name) == (ROOT / "docs" / name).read_bytes(), f"Packaged {name} differs from source"
     print(f"PASS {p.name}: metadata, {arch} static ELF, socket 0660, current frontend and MIT license")

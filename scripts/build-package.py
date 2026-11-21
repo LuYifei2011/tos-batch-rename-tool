@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Build a TOS deb preview using Python's tarfile and an explicit ar writer."""
+"""Build a TOS deb with a static Linux backend and bundled frontend."""
 import argparse
-import io
 import json
 from pathlib import Path
 import shutil
@@ -45,7 +44,7 @@ with tarfile.open(app / "webui.bz2", "w:bz2", format=tarfile.USTAR_FORMAT) as ta
 (app / "docs").mkdir()
 for name in ["README.md", "THIRD_PARTY_NOTICES.md", "LICENSE"]:
     shutil.copy(ROOT / name, app)
-for name in ["COMPATIBILITY.md", "DEVELOPMENT.md", "RELEASE_NOTES.md", "DESIGN.md"]:
+for name in ["COMPATIBILITY.md", "DEVELOPMENT.md", "RELEASE_NOTES.md", "DESIGN.md", "BINARY_SOURCE.md"]:
     shutil.copy(ROOT / "docs" / name, app / "docs" / name)
 licenses = app / "licenses"
 licenses.mkdir()
@@ -85,26 +84,6 @@ for p in control.iterdir():
 for path in stage.rglob("*"):
     if path.is_file() and (path.parent == control or path.suffix in {".ini", ".lang", ".service", ".socket"}):
         path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n"))
-def archive(directory, excludes=()):
-    data = io.BytesIO()
-    with tarfile.open(fileobj=data, mode="w:gz", format=tarfile.GNU_FORMAT) as tar:
-        for p in sorted(directory.rglob("*")):
-            rel = p.relative_to(directory)
-            if rel.parts[0] in excludes:
-                continue
-            info = tar.gettarinfo(str(p), "./" + str(rel))
-            info.uid = info.gid = 0
-            info.uname = info.gname = "root"
-            with p.open("rb") if p.is_file() else io.BytesIO() as f:
-                tar.addfile(info, f if p.is_file() else None)
-    return data.getvalue()
 out = ROOT / "build" / f"batch-rename_{version}_{args.arch}.deb"
-with out.open("wb") as f:
-    f.write(b"!<arch>\n")
-    for name, content in [("debian-binary", b"2.0\n"), ("control.tar.gz", archive(control)), ("data.tar.gz", archive(stage, ("DEBIAN",)))]:
-        header = f"{name+'/':<16}{0:<12}{0:<6}{0:<6}{'100644':<8}{len(content):<10}`\n"
-        f.write(header.encode("ascii"))
-        f.write(content)
-        if len(content) % 2:
-            f.write(b"\n")
+subprocess.run(["dpkg-deb", "--root-owner-group", "-Zxz", "--build", stage, out], check=True)
 print(out)
